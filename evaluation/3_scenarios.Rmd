@@ -1,0 +1,332 @@
+
+# Scenario's for the design of MHQ
+
+## Habitat types and subtypes included in MHQ
+
+As mentioned in @westra2014, MHQ does not contain a monitoring scheme for all habitat types or habitat subtypes that occur in Flanders. For several habitat types a habitat quality monitoring scheme is not considered as a feasible or appropriate approach:
+
++ very rare terrestrial habitat types (defined as habitat types with an area lower than 10 ha or occurring on less than 15 locations): a monitoring scheme would result in a very high density of plots which might impact the vulnerable vegetation;
++ estuaries (type 1130): the habitat quality has to be evaluated on a landscape scale;
++ mudflats (type 1140): this habitat type is not included in @oosterlynck2020;
++ very dynamic habitat types (type 1130, 2110 and 7150): a basic habitat quality assessment combined with habitat area mapping is considered a more appropriate approach;
++ habitat type 6430: a very patchy habitat type for which an accurate sample frame is not available;
++ habitat type 9110: habitat type only occurring in the continental biogeographical region of Flanders and it covering only a small area compared to the total area of 9110 in Belgium. Therefore a separate estimate for Flanders is not considered very relevant.
+
+An oversampling is considered for all habitat subtypes except for the very rare terrestrial subtypes (defined as habitat subtypes with an area lower than 10 ha or occurring on less than 15 locations). As for dynamic habitat types, we intend to perform a basic habitat quality assessment for very rare terrestrial habitat types and subtypes is combination with the habitat area mapping.
+
+Appendix \@ref(annex2) shows for which habitat types a monitoring scheme was developed and for which subtypes oversampling is considered. The area and the number of locations (to determine the very rare habitat types and subtypes) is derived from the standardized map of habitat types in Flanders [@westra2021]. This data source is a processed version of the Natura 2000 habitat map [@inbo2020]. The standardized map is processed in a way it can be easily imported and analysed in R. It can be imported in R by using the function `read_habitatmap_stdized()` of the n2khab package [@vanderhaeghe2022].
+
+In the original design of @westra2014 a monitoring scheme was also planned for habitat type 5130 and 6430. However these monitoring schemes were not implemented. Habitat type 5130 is considered a very rare habitat type (see Appendix \@ref(annex2)) and for habitat type 6430 a monitoring scheme is not feasible as mentioned above.    
+
+check 2190_mp
+
+
+
+
+```{r}
+habmap_sdz <- read_habitatmap_stdized()
+
+habmap_types <- habmap_sdz$habitatmap_types %>%
+  filter(phab > 10) %>%
+  filter(str_sub(type, 1,3) != "rbb")
+
+habmap_polygons <- habmap_sdz$habitatmap_polygons
+
+types <- read_types() %>%
+  select(type, typeclass, typelevel, main_type)
+
+exclude_type <- c("9110", "1130", "1140", "1310", "3270", "5130", "2110", "6120", "6430", "7150")
+
+ n_polygons_min = 15
+ area_min = 10
+
+sac <- read_admin_areas(dsn = "sac") %>%
+  group_by(sac_code) %>%
+  summarise(n_pol = n()) %>%
+  ungroup()
+
+habmap_polygons <- habmap_polygons %>%
+  st_join(sac) %>%
+  mutate(sac = !is.na(sac_code)) %>%
+  mutate(area_polygon = drop_units(st_area(geom))) %>%
+  st_drop_geometry()
+
+types_area_strata <- habmap_types %>%
+  left_join(habmap_polygons, by = "polygon_id") %>%
+  left_join(types, by = "type") %>%
+  group_by(type, typelevel, typeclass, main_type, sac) %>%
+  summarise(area_subtype_sac = sum(phab/100 * area_polygon)/10000,
+            area_polygons_subtype_sac = sum(area_polygon)/10000,
+            n_polygons_subtype_sac = n_distinct(polygon_id),
+            prop_subtype_sac = area_subtype_sac/area_polygons_subtype_sac) %>%
+  ungroup() %>%
+  group_by(type) %>%
+  mutate(area_subtype = sum(area_subtype_sac),
+            area_polygons_subtype = sum(area_polygons_subtype_sac),
+            n_polygons_subtype = sum(n_polygons_subtype_sac),
+            prop_subtype = area_subtype/area_polygons_subtype) %>%
+  ungroup() %>%
+  group_by(main_type, sac) %>%
+  mutate(area_type_sac = sum(area_subtype_sac),
+            area_polygons_sac = sum(area_polygons_subtype_sac),
+            n_polygons_sac = sum(n_polygons_subtype_sac),
+            prop_type_sac = area_type_sac/area_polygons_sac) %>%
+  ungroup() %>%
+  group_by(main_type) %>%
+  mutate(area_type = sum(area_subtype_sac),
+            area_polygons = sum(area_polygons_subtype_sac),
+            n_polygons = sum(n_polygons_subtype_sac),
+            prop_type = area_type/area_polygons,
+            area_type_insac = sum(area_subtype_sac * (sac))
+          ) %>%
+  ungroup() %>%
+  mutate(prop_type_insac = area_type_insac/area_type) %>%
+  mutate(sample_type =  ifelse(main_type %in% exclude_type, FALSE,
+                               ifelse(typeclass == "FW", TRUE, (n_polygons > n_polygons_min) & (area_type > area_min))),
+         extra_subtype = ifelse((main_type %in% exclude_type) | (typelevel != "subtype"), FALSE,
+                               ifelse(typeclass == "FW", TRUE, (n_polygons_subtype > n_polygons_min) & (area_subtype > area_min)))
+         )
+
+
+
+```
+
+
+
+## Scenario's for terrestrial habitat types
+
+
+
+
+```{r}
+
+
+calc_finitsamplesize_terrhab <- function(n_type_flanders = 80, n_type_sac = 170, n_subtype_flanders = 80, types_area_strata = types_area_strata) {
+  
+  types_samplesize_detailed <- types_area_strata %>%
+  mutate(n_infinite_flanders = n_type_flanders * sample_type,
+         n_infinite_sac = n_type_sac * sample_type,
+         n_infinite_subtype = n_subtype_flanders * extra_subtype,
+         N = area_type / (32 * 32 /10000),
+         N_sac = area_type_sac/ (32 * 32 /10000),
+         N_subtype = area_subtype/(32 * 32 /10000),
+         n_finite_flanders_tot = N * n_infinite_flanders/ (n_infinite_flanders + N - 1),
+         n_finite_flanders = N * n_infinite_flanders/ (n_infinite_flanders + N - 1) * area_subtype_sac/area_type,
+         n_finite_sac_tot = N_sac * n_infinite_sac/ (n_infinite_sac + N_sac - 1) * sac,
+         n_finite_sac = N_sac * n_infinite_sac/ (n_infinite_sac + N_sac - 1) * area_subtype_sac/area_type_sac * sac,
+         n_finite_subtype_tot =  N_subtype * n_infinite_subtype/ (n_infinite_subtype + N_subtype - 1),
+         n_finite_subtype = N_subtype * n_infinite_subtype/ (n_infinite_subtype + N_subtype - 1) * area_subtype_sac/area_subtype,
+         n_extra_sac = pmax(0, n_finite_sac - n_finite_flanders),
+         n_extra_subtype = pmax(0, n_finite_subtype - n_finite_flanders - n_extra_sac))
+
+main_type_samplesize_summary <- types_samplesize_detailed %>%
+  group_by(main_type) %>%
+  summarise(n_finite_flanders = ceiling(sum(n_finite_flanders)),
+        n_extra_sac = ceiling(sum(n_extra_sac)),
+        n_extra_subtypes = ceiling(sum(n_extra_subtype))) %>%
+  ungroup() %>%
+  mutate(n_tot = n_finite_flanders + n_extra_sac + n_extra_subtypes)
+  
+type_samplesize_summary <- types_samplesize_detailed %>%
+  group_by(type) %>%
+  summarise(n_finite_flanders = ceiling(sum(n_finite_flanders)),
+        n_extra_sac = ceiling(sum(n_extra_sac)),
+        n_extra_subtypes = ceiling(sum(n_extra_subtype))) %>%
+  ungroup() %>%
+  mutate(n_tot = n_finite_flanders + n_extra_sac + n_extra_subtypes)
+
+total_samplesize <- types_samplesize_detailed %>%
+  summarise(n_alltypes_flanders = ceiling(sum(n_finite_flanders)),
+        n_alltypes_extra_sac = ceiling(sum(n_extra_sac)),
+        n_alltypes_extra_subtypes = ceiling(sum(n_extra_subtype))) %>%
+  mutate(n_alltypes_tot = n_alltypes_flanders + n_alltypes_extra_sac + n_alltypes_extra_subtypes)
+
+result <- list(
+  samplesize_detailed = types_samplesize_detailed,
+  summary_types = type_samplesize_summary,
+  summary_main_types = main_type_samplesize_summary,
+  total = total_samplesize
+)
+return(result)
+  
+}
+```
+
+
+```{r}
+
+types_area_strata_nonforest <- types_area_strata %>%
+  filter(typeclass != "FW") %>%
+  #filter(!main_type %in% c("1310", "5130")) %>%
+  filter(str_sub(main_type, 1, 1) != "9")
+
+types_area_strata_forest <- types_area_strata %>%
+  filter(str_sub(main_type, 1, 1) == "9")
+
+# original scenario
+
+samplesize_original_nonforest <- calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_nonforest)
+
+samplesize_original_nonforest_subtype <- samplesize_original_nonforest$summary_types %>%
+  mutate(type_cat = "nonforest type",
+         scenario = "original",
+         cycle_years = 12,
+         n_flanders = 80,
+         n_sac = 170,
+         n_subtype = 80)
+  
+samplesize_original_forest <- calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_forest, n_type_sac = 0)
+
+samplesize_original_forest_subtype <- samplesize_original_forest$summary_types %>%
+  mutate(type_cat = "forest type",
+         scenario = "original",
+         cycle_years = 12,
+         n_flanders = 80,
+         n_sac = 0,
+         n_subtype = 80)
+
+#scenario 1
+
+samplesize_sc1_nonforest <- (calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_nonforest, n_type_sac = 80))$summary_types %>%
+  mutate(type_cat = "nonforest type",
+         scenario = "alternative 1",
+         cycle_years = 6,
+         n_flanders = 80,
+         n_sac = 80,
+         n_subtype = 80)
+
+#scenario 2
+
+samplesize_sc2_nonforest <- (calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_nonforest, n_type_sac = 80, n_type_flanders = 40, n_subtype_flanders = 40))$summary_types %>%
+  mutate(type_cat = "nonforest type",
+         scenario = "alternative 2",
+         cycle_years = 6,
+         n_flanders = 40,
+         n_sac = 80,
+         n_subtype = 40)
+
+#scenario 3
+
+samplesize_sc3_nonforest <- (calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_nonforest, n_type_sac = 80, n_type_flanders = 80, n_subtype_flanders = 40))$summary_types %>%
+  mutate(type_cat = "nonforest type",
+         scenario = "alternative 3",
+         cycle_years = 6,
+         n_flanders = 80,
+         n_sac = 80,
+         n_subtype = 40)
+
+#scenario 4
+
+samplesize_sc4_nonforest <- (calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_nonforest, n_type_sac = 80, n_type_flanders = 40, n_subtype_flanders = 80))$summary_types %>%
+  mutate(type_cat = "nonforest type",
+         scenario = "alternative 4",
+         cycle_years = 6,
+         n_flanders = 40,
+         n_sac = 80,
+         n_subtype = 80)
+
+
+
+scenarios <- bind_rows(samplesize_original_forest_subtype,
+                       samplesize_original_nonforest_subtype,
+                       samplesize_sc1_nonforest,
+                       samplesize_sc2_nonforest,
+                       samplesize_sc3_nonforest,
+                       samplesize_sc4_nonforest
+                       ) %>%
+  select(type_cat, scenario, n_flanders, n_sac, n_subtype, cycle_years, everything()) %>%
+  left_join(types, by = "type") %>%
+  filter(main_type != "6430") %>%
+  mutate(fieldwork_team = ifelse(type_cat == "forest type", "anb",
+                                 ifelse(main_type %in% c("2310", "2330", "4010", "4030", "6510"), "anb", "inbo")))
+
+
+```
+
+```{r}
+samplesize_original_detailed <- bind_rows(samplesize_original_nonforest$samplesize_detailed,
+                                          samplesize_original_forest$samplesize_detailed
+) 
+
+#write_vc(samplesize_original_detailed, root = "../output", file = "samplesize_mhq_terr_v2020", sorting = c("type", "sac"), strict = FALSE)
+
+meetnet_selection <- samplesize_original_detailed %>%
+  distinct(type, main_type, typelevel, n_polygons, area_type, prop_type_insac, prop_type, sample_type, area_subtype, n_polygons_subtype, prop_subtype, extra_subtype) %>%
+  mutate(sample_type = ifelse(sample_type, "ja", "nee"),
+         extra_subtype = ifelse(extra_subtype, "ja", "nee")) %>%
+  group_by(main_type) %>%
+  mutate(has_subtype = n_distinct(type) > 1) %>%
+  ungroup() %>%
+  mutate(subtype = ifelse(typelevel == "subtype", as.character(type), NA),
+         extra_subtype = ifelse(typelevel == "subtype", extra_subtype, NA)) %>%
+  filter(!(has_subtype & is.na(subtype))) %>%
+  mutate(area_type = round(area_type, 1),
+         area_subtype = round(area_subtype,1),
+         prop_type_insac = round(prop_type_insac, 2),
+         prop_type = round(prop_type, 2),
+         prop_subtype = round(prop_subtype, 3)) %>%
+  select(main_type, sample_type, n_polygons, area_type, prop_type_insac, prop_type, subtype, area_subtype, n_polygons_subtype, prop_subtype, extra_subtype)
+
+```
+
+
+
+
+
+## Steekproefgroottes terrestrische habitattypen voor verschillende scenario's
+
+```{r}
+
+scenarios_team <- scenarios %>%
+  filter(n_finite_flanders > 0) %>%
+  group_by(fieldwork_team, type_cat, scenario, n_flanders, n_sac, n_subtype, cycle_years) %>%
+  summarise(n_finite_flanders = sum(n_finite_flanders),
+            n_extra_sac = sum(n_extra_sac),
+            n_extra_subtypes = sum(n_extra_subtypes),
+            type_list = str_c(unique(main_type), collapse = ", ")) %>%
+  ungroup() %>%
+  mutate(n_total = n_finite_flanders + n_extra_sac + n_extra_subtypes,
+         n_total_year = ceiling(n_total/ cycle_years),
+         scenario = factor(scenario, levels = c("original", "alternative 1", "alternative 2", "alternative 3", "alternative 4"))) %>%
+  arrange(fieldwork_team, scenario)
+
+scenarios_total <- scenarios %>%
+  filter(n_finite_flanders > 0) %>%
+  group_by(type_cat, scenario, n_flanders, n_sac, n_subtype, cycle_years) %>%
+  summarise(n_finite_flanders = sum(n_finite_flanders),
+            n_extra_sac = sum(n_extra_sac),
+            n_extra_subtypes = sum(n_extra_subtypes),
+            type_list = str_c(unique(main_type), collapse = ", ")) %>%
+  ungroup() %>%
+  mutate(n_total = n_finite_flanders + n_extra_sac + n_extra_subtypes,
+         n_total_year = ceiling(n_total/ cycle_years),
+         scenario = factor(scenario, levels = c("original", "alternative 1", "alternative 2", "alternative 3", "alternative 4"))) %>%
+  arrange(scenario)
+
+scenarios_total %>%
+  kable() %>%
+  kable_styling() %>%
+  collapse_rows(c(1), target = 1)
+
+#scenarios_team %>%
+#  write.csv2("../output/scenario_team.csv")
+```
+
+## Keuze scenario
+
+We kiezen voor de open habitats het scenario alternatief 3. Voor boshabitats behouden we het originele scenario.
+
+```{r}
+samplesize_scenario3_nonforest <- calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_nonforest, n_type_sac = 80, n_type_flanders = 80, n_subtype_flanders = 40)
+
+samplesize_scenario3_detailed <- bind_rows(samplesize_scenario3_nonforest$samplesize_detailed,
+                                          samplesize_original_forest$samplesize_detailed
+) 
+
+#write_vc(samplesize_scenario3_detailed, root = "../output", file = "samplesize_mhq_terr_v2021", sorting = c("type", "sac"), strict = FALSE)
+
+
+```
+
+
+

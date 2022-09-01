@@ -1,0 +1,74 @@
+```{r references, results = "asis", echo = FALSE}
+# insert the references at this position
+# set appendix = FALSE, when the report has no appendix
+INBOmd::references(appendix = TRUE)
+```
+
+# Habitat types and subtypes in Flanders {#annex1}
+
+```{r}
+
+subtype_names <- read_types() %>%
+  filter(typelevel == "subtype") %>%
+  distinct(main_type, type, type_name) %>%
+  rename(subtype = type, subtype_name = type_name)
+
+main_types_names <- read_types() %>%
+  filter(typelevel == "main_type") %>%
+  distinct(typeclass_name, main_type, type_name)
+  
+table_types <- main_types_names %>%
+  left_join(subtype_names, by = "main_type")
+
+table_types %>%
+  select("habitat category" = typeclass_name, code = main_type, "habitat type" = type_name, code_st = subtype, "habitat subtype" = subtype_name) %>%
+  kable() %>%
+  kable_styling() %>%
+    collapse_rows(c(1, 2, 3))
+  
+```
+
+# Habitat types and subtypes included in MHQ {#annex2} 
+
+Table \@ref(tab:tabschemes) gives an overview of the habitat types for which a habitat quality monitoring scheme was developed. The table also provides the reason why a monitoring scheme was not considered the most appropriate approach for several habitat types. Terrestrial habitat types are considered very rare when the area is lower than 10 ha or when the habitat type occurs on less than 15 locations. The area and the number of location was derived from the the 2020 version of the Habitat map [@desaeger2020].   
+
+```{r tabschemes}
+
+maintype_selection <- types_area_strata %>%
+  mutate(area = round(area_type),
+         sample_type = ifelse(sample_type, "yes", "no"),
+         reden = ifelse(main_type %in% c("1310", "2110", "3270", "7150"), "very dynamic habitat type",
+                        ifelse(main_type %in% c("1140"), "no habitat quality indicators available",
+                               ifelse(main_type %in% c("1130"), "habitat quality evaluation on landsacpe scale",
+                                      ifelse(main_type %in% c("6430"), "no accurate sample frame", 
+                                             ifelse(main_type %in% c("9110"), "low priority", 
+                                             ifelse(sample_type == "no" & (area <= 10 | n_polygons <= 15) , "very rare terrestrial type", ""))))))) %>%
+  select("code habitat type" = main_type, "area (ha)" = area,  "# locations" = n_polygons, "monitoring scheme" = sample_type, "reason" = reden) %>%
+  unique()
+  
+maintype_selection %>%
+  kable(caption = "Selection of the habitat types for which a monitoring scheme is implemented") %>%
+  kable_styling()
+
+```
+
+
+
+
+Table \@ref(tab:tabschemes) gives an overview of which habitat subtypes are considered for oversampling. 
+
+```{r tabschemes2}
+subtype_selection <- types_area_strata %>%
+  filter(typelevel == "subtype") %>%
+  filter(sample_type) %>%
+  mutate(area = round(area_subtype),
+         extra_subtype = ifelse(extra_subtype, "yes", "no"),
+         reason = ifelse(extra_subtype == "no" & (area <= 10 | n_polygons <= 15) , "very rare terrestrtial subtype", "")) %>%
+  select("code type " = main_type,"code subtype" = type, "area (ha)" = area,  "# locations" = n_polygons_subtype, "oversampling" = extra_subtype, reason) %>%
+  unique() 
+  
+subtype_selection %>%
+  kable(caption = "Oversampling habitat subtypes") %>%
+  kable_styling() %>%
+  collapse_rows(1)
+```

@@ -1,0 +1,102 @@
+
+# Information needs
+
+## European level
+
+Every six years each EU member state has to report on the conservation status of the European protected habitat types listed in Annex 1 of the Habitat Directive.
+
+The conservation status of habitat types should be assessed per biogeographical region is determined by four criteria [@dgenvironment2017]:
+
+-   **Range**
+-   **Area**
+-   **Specific structure and functions (including typical species)**
+-   **Future prospects**
+
+Each criteria is evaluated according to the evaluation matrix specified in the reporting guidelines in @dgenvironment2017.
+
+The conservation status of **specific structure and functions (including typical species)** is assessed as follows:
+
+-   **Favourable**: Structures and functions (including typical species) in good condition and no significant deteriorations / pressures
+-   **Unfavourable - Bad**: More than 25% of the area is unfavourable as regards its specific structures and functions (including typical species)
+-   **Unfavourable -- Inadequate**: Any other combination
+-   **Unknown**: No or insufficient reliable information available
+
+The guidelines [@dgenvironment2017] stress the importance of trend information as trends are decisive for the assessment of conservation status since usually only stable or increasing trends can result in an overall favourable conservation status (FCS) conclusion. It is advised that more attention should be paid to the methodology of monitoring schemes to improve the quality of trend information. A short-term trend is considered as the trend over two reporting cycles (12 years). The recommended period for assessing longer-term trends is four reporting cycles (24 years).
+
+## Regional level
+
+Flanders is situated in the northern part of Belgium and is largely within the Atlantic biogeographical region. INBO is responsible for the assessment of the CS of habitat types on the scale of Flanders. The results of Flanders are than integrated with the results of the the Walloon and Brussels Capital region to assess the CS of habitat types on the scale of Belgium per biogeographical region. This integrated assessment is reported to the European Commission.
+
+The methodology that is used by INBO to evaluate the CS of the criteria specific structure and functions (including typical species) is based on the general guidelines by @dgenvironment2017 and is described in more detail in @paelinckx2019. It requires following information per habitat type:
+
+-   the status and trend of the percentage of the habitat area that is in a good local condition as regards its specific structures and functions
+-   habitat typical species
+-   landscape ecological coherence
+-   pressures and threats
+
+The monitoring scheme for biotic habitat quality (MHQ) supports the assessment of the habitat area that is in a good local condition (as regards its specific structures and functions). As the name of the monitoring scheme suggest, we use the term 'biotic habitat quality' to refer to the specific structure and functions of the habitat. Further in this report we will only focus on this part of the information needs.
+
+In Flanders 46 habitat types occur and several of these habitat types are subdivided into habitat subtypes (Appendix \@ref(annex1)). Nature policy in Flanders also requires information on habitat quality for these habitat subtypes. However, this information has a lower priority and therefore a lower precision (compared to the habitat main types) is acceptable.   
+
+
+# Overview of MHQ
+
+## Monitoring target 
+
+Based on the information needs we can summarize the main targets of MHQ as follows:
+
++ the habitat quality status per habitat type and per habitat subtype
+  + what is the percentage of the habitat area that is in good/bad condition?
+  + is this percentage of habitat in bad condition  higher or lower than 25%?
+  
++ the habitat quality short-term (12 years) and long-term (24 years) trend per habitat type and per habitat subtype
+  + what is the trend of the habitat area that is in a good/bad condition?
+  + is the habitat quality stable, improving or deteriorating?
+
+The original design of MHQ [@westra2014] was mainly based on the target for the status of habitat quality. In this report we will evaluate how the design can be modified to better meet the monitoring target for the trend in habitat quality. We will evaluate different scenario's based on sample size calculations for status and trend in habitat quality. But first we resume how the habitat quality is defined and what is measured in the field.
+
+
+## Biotic habitat quality indicators
+
+The report of @oosterlynck2020 provides a series of criteria and indicators to define the favourable conservation status of the habitat quality for 44 habitattypes and 41 habitatsubtypes, that occur in Flanders. Different types of indicators are included that are related to:
+
++ vegetation composition
++ vegetation structure
++ disturbances
++ spatial connectivity
+
+For each indicator a threshold value defines whether the indicator is favourable or unfavourable. Combining the results for the different indicators allows an overall assessment of the habitat quality at a habitat location. The selection of the indicators and their threshold values is based on their capacity to cover the habitat's functioning in an objective (i.e. based on national and international scientific literature), unambiguous, practical, measurable and comprehensive way [@oosterlynck2020]. 
+
+## Field measurements
+
+INBO developed standardized protocols for the MHQ field measurements [@inbo2017], [@Oosterlynck2022], [@Scheers2022]  that allows the evaluation of most of the indicators in [@oosterlynck2020]. The measurements consist of two parts:
+
++ vegetation composition: presence and cover of all plant species per vegetation layer
++ structure variables: measurement of variables related to vegetation structure
+
+The spatial scale at which these variables are measured, depends on the habitat type is shown in \@ref(tab:tabscale). Note that these measurements do not allow the evaluation of the indicators related to spatial connectivity.  
+
+```{r tabscale}
+tabscale <- tibble(category = c("terrestrial", "terrestrial", "aquatic", "aquatic"),
+                   "habitat type" = c("forest", "open", "river", "standing water"),
+                   "vegetation composition" = c("9m x 9m square plot", "3m x 3m square plot", "100m river segment", "entire water body"),
+                   "structure variables" = c("18m diameter circle plot", "18m diameter circle plot", "100m river segment", "entire water body"))
+tabscale %>%
+  kable(caption= "Spatial scale at which the vegetation composition and structure variables are measured") %>%
+  kable_styling() %>%
+  collapse_rows(1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
