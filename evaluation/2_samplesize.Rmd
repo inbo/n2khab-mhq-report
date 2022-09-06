@@ -1,5 +1,5 @@
 
-## Sample size calculations
+# Sample size calculations
 
 Sample size calculations provide an insight in the relationship between sample size and the minimal detectable effect size for a given significance level $\alpha$ and power $\pi$. $\alpha$ is the probability of a type I error, i.e. the probability of concluding that there is no effect based on a the sample, when in reality there is an effect. $\pi$ is the probability to detect an effect based on a sample, when the effect also exists in reality.
 
@@ -7,9 +7,9 @@ The original sample size of the monitoring scheme is based on sample size calcul
 
 As in [@westra2014], we will choose a power $\pi$ of 0.80 and a significance level $\alpha$ of 0.05.    
 
-### Habitat quality status
+## Habitat quality status
 
-#### Minimal detectable difference between the proportion of habitat with bad quality and the 25%-threshold
+### Minimal detectable difference between the proportion of habitat with bad quality and the 25%-threshold
 
 The quality of a habitat type is unfavourable (on a regional scale) when more than 25% of the habitat area has a bad quality (on a local scale). Here we want to determine the minimal detectable difference from the 25%-threshold.
 
@@ -82,7 +82,7 @@ sim_data_tabel %>%
   add_header_above(c(" " = 3, "Minimal detectable effect" = 2))
 ```
 
-#### Comparison with results of the 2019 habitat reporting
+### Comparison with results of the 2019 habitat reporting
 
 ```{r}
 
@@ -141,9 +141,9 @@ ggplot(data = status_types, aes(x = n, y = prop_slecht, ymin = prop_slecht_lci, 
 
 ```
 
-### Trends in habitat quality
+## Trends in habitat quality
 
-#### Difference between proportions
+### Difference between proportions
 
 To determine the detectable difference in habitat proportions with bad quality between two points in time, we apply the McNemar test [@chow2003] using the function `McNemar.Test` in the R package TrialSize [@zhang2020].
 
@@ -261,7 +261,9 @@ data_sim_tabel <- bind_rows(data_sim_tabel_40,
 
 ```{r tab-powertrend2}
 data_sim_tabel %>%
-  kable(caption = "Minimal detectable difference as a function of sample size and dynamics (low dynamics = 1.02, medium dynamics =  1.5 and high dynamics = 2) with $\\alpha$ = 0.05 and $\\pi$ = 0.80") %>%
+  kable(caption = "Minimal detectable difference as a function of sample size and dynamics (low dynamics = 1.02, medium dynamics =  1.5 and high dynamics = 2) with $\\alpha$ = 0.05 and $\\pi$ = 0.80",
+        booktabs = TRUE,
+        align = "c") %>%
   kable_styling() %>%
   add_header_above(c(" " = 1, "net decrease or increase (%)" = 3)) %>%
   collapse_rows(1)
@@ -312,11 +314,13 @@ options(knitr.kable.NA = '')
 
 dynamics_forest %>%
   select("habitat type" = type, "$n_{paired}$" = n_gepaard, "$n_{01}$" = n_01 , "$n_{10}$" = n_10, dynamics) %>%
-  kable(caption = "Inschating van de dynamics van de boshabitattypen op basis van de gegevens van de Vlaamse bosinventarisatie") %>%
+  kable(caption = "Inschating van de dynamics van de boshabitattypen op basis van de gegevens van de Vlaamse bosinventarisatie",
+        booktabs = TRUE,
+        escape = FALSE) %>%
   kable_styling()
 ```
 
-#### Differences between habitat quality indicators
+### Differences between habitat quality indicators
 
 Continuous, discrete or categorical variables that are a measure for habitat quality are more sensitive to changes than a binary variable (good or bad habitat quality). Example of such variables are:
 
@@ -339,9 +343,9 @@ sim_data <- expand.grid(n = 20:400,
   mutate(mean_difference = d * sd_difference)
 ```
 
-##### Sample size calculation for continous variables
+#### Sample size calculation for continous variables
 
-For the exploration of the detectable effect size as a function of the sample size, we assume continuous variables with a normal distribution. This enables a straightforward power analysis based on the paired t-test using the `pwr.t.test` of pwr package [@campely2020]. However not all habitat quality indicators are normally distributed. Yet we believe that this method will give us a general idea on the relationship between detectable effect size and sample size.
+For the exploration of the detectable effect size as a function of the sample size, we assume continuous variables with a normal distribution. This enables a straightforward power analysis based on the paired t-test using the `pwr.t.test` of pwr package [@champely2020]. However not all habitat quality indicators are normally distributed. Yet we believe that this method will give us a general idea on the relationship between detectable effect size and sample size.
 
 When applying the paired t-test, the detectable effect size ($d$) equals the mean of the differences between paired observations divided by the standard deviation of the differences. Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd) show the detectable effect size as a function of the sample size.
 
@@ -400,7 +404,7 @@ sim_data %>%
 
 We will further explore the data of the Flemish Forest Inventory to get a rough idea on which standard deviation of differences we can expect for habitat quality indicators. 
 
-##### Example 1: trend in proportion of favourable indicators for forest habitat types
+#### Example 1: trend in proportion of favourable indicators for forest habitat types
 
 The Forest Inventory data allows the calculation and evaluation of most habitat quality indicators defined in [@oosterlynck2020] for the plots that are located in a forest habitat types. Based on this, we can determine the proportion of the total number of indicators that are favourable per plot. Figure \@ref(fig:figbos) shows this proportion for the plots that were measured in both the first period (1997-1998) and the second period (2009-2018) of the Flemish Forest Inventory.
 
@@ -497,7 +501,7 @@ verschil_aandeel_gunstig_detecteerbaar %>%
 
 
 
-##### Example 2: trend in indicator values for forest habitat types
+#### Example 2: trend in indicator values for forest habitat types
 
 Here we use the Forest Inventory data to get a rough idea on the detectable effect size for individual habitat quality indicators. We analyse four indicators:
 

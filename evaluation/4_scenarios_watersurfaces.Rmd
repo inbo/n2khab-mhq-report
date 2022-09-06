@@ -1,0 +1,411 @@
+# Sample design for standing water habitat types 
+
+## Original design
+
+The original design for the standing water habitat types in @westra2014 consists of a stratified sample with a combination of following strata:
+
++ area class of the water surface
+  + `Opp <= 1 ha`
+  + `1 ha < Opp <= 5 ha`
+  + `5 ha < Opp < 50 ha`
+  + `>= 50 ha`
++ inside or outside a special area of conservation (SAC)
+
+The original design can be summarized as follows:
+
++ draw a sample for 3130_aom, 3150, 3160 in area classes `Opp <= 1 ha` and  `1 ha < Opp <= 5 ha`
+  + with an initial sample size of 40 sampling units for Flanders ($n_{fl}$)
+  + select extra sampling units within SAC until 80 sampling units are selected
+  + apply the finite population correction (see paragraph \@ref(scenarioterr))
+  + divide sample size equally over both area classes
++ selection of all water surfaces for other area classes and other habitat types and habitat subtypes
+
+Although a monitoring cycle of 12 years was proposed in @westra2014, the monitoring schemes for standing water habitat types were implemented with a monitoring cycle of 6 years. This is because the field work could be combined with other surveys. To be able to detect short-term trends (12 years) in habitat quality we will keep this monitoring cycle of 6 years. 
+
+## Impact of the sample frame on the sample size in the original design
+
+The number of water surfaces within each stratum will have an impact on the number of selected sampling units.
+The main impact is that all water surfaces in the area classes `5 ha < Opp < 50 ha` and `>= 50 ha` are selected in the original design. Furthermore, the number of polygons also has an impact on the finite population correction.
+
+Therefore, we want to compare the sampling frame that was originally used for designing the monitoring schemes with the latest available sampling frame.  
+
+The original sample frame consists of the polygons with standing water habitat types in the 2014 version of the Flemish habitat map. 
+
+```{r}
+
+watersurfaces_hab_polygons_2014_orig <- read_sf("data/watersurfaces_2014/BWK_plassen_versie 20140324.shp")
+
+watersurfaces_hab_polygons_2014 <- watersurfaces_hab_polygons_2014_orig %>%
+  mutate(sac = (SBZH == 1) & (!is.na(SBZH))) %>%
+  select(pol_id = Pol_ID, sac)
+
+check <- nrow(watersurfaces_hab_polygons_2014) == n_distinct(watersurfaces_hab_polygons_2014$pol_id)
+
+watersurfaces_hab_types_2014_orig <- read.table("data/watersurfaces_2014/BWK_hab_aq.txt", header=TRUE)
+
+watersurfaces_hab_types_2014 <- watersurfaces_hab_types_2014_orig %>%
+  select(pol_id = Pol_ID, shape_area = Shape_Area, code, phab) %>%
+  filter(str_detect(code, "gh", negate = TRUE)) %>%
+  mutate(code = ifelse(code == "3130", "3130_aom", code),
+         patch_area = shape_area * phab/100,
+         area_ha = patch_area/10000,
+         area_polygon_ha = shape_area/10000,
+         area_class = ifelse(area_ha <= 1, "Opp <= 1 ha",
+                             ifelse(area_ha <= 5, "1 ha < Opp <= 5 ha",
+                                    ifelse(area_ha < 50, "5 ha < Opp < 50 ha", ">= 50 ha"))),
+         area_class = factor(area_class, levels = c("Opp <= 1 ha", "1 ha < Opp <= 5 ha", "5 ha < Opp < 50 ha", ">= 50 ha"))) %>%
+  left_join(st_drop_geometry(watersurfaces_hab_polygons_2014), by = "pol_id") %>%
+  rename(type = code) %>%
+  mutate(version = "habitatmap_2014")
+
+```
+
+
+```{r}
+
+sac_sf <- read_admin_areas(dsn = "sac") %>%
+  group_by(sac_name) %>%
+  summarise(n_pol = n()) %>%
+  ungroup() %>%
+  select(sac_name)
+
+```
+
+Since 2014 new data sources became available:
+
++ the map of the water surfaces in Flanders [@inbo2020_2]
++ updated information on the presence of aquatic habitat types, made available through the 2020 version of the Flemish habitat map [@inbo2020]
+
+Both data sources are combined in the map of standing water habitat types [@westra2021_2], which is used as the current sample frame.   
+
+```{r}
+
+watersurfaces_populationunits <- read_vc(root = "data", file = "mhq_watersurfaces_populationunits")
+
+watersurfaces_hab <- read_watersurfaces_hab()
+
+filepath <-  file.path(fileman_up("n2khab_data"), "20_processed/watersurfaces_hab/watersurfaces_hab.gpkg")
+
+check_version <- n2khab::xxh64sum(filepath) == "5792b496a94d0524"
+
+watersurfaces_hab <- watersurfaces_hab$watersurfaces_polygons %>%
+  semi_join(watersurfaces_populationunits, by = "polygon_id") %>%
+  select(polygon_id)
+
+watersurfaces_extra <- read_watersurfaces() %>%
+  filter(polygon_id %in% watersurfaces_populationunits$polygon_id) %>%
+  filter(! polygon_id %in% watersurfaces_hab$polygon_id) %>%
+  select(polygon_id)
+
+watersurfaces_area_sf <- watersurfaces_hab %>%
+  bind_rows(watersurfaces_extra) %>%
+  mutate(area_ha = drop_units(st_area(geom))/10000,
+         area_polygon_ha = area_ha,
+         area_class = ifelse(area_ha <= 1, "Opp <= 1 ha",
+                             ifelse(area_ha <= 5, "1 ha < Opp <= 5 ha",
+                                    ifelse(area_ha < 50, "5 ha < Opp < 50 ha", ">= 50 ha"))),
+         area_class = factor(area_class, levels = c("Opp <= 1 ha", "1 ha < Opp <= 5 ha", "5 ha < Opp < 50 ha", ">= 50 ha"))) %>%
+  st_join(sac_sf) %>%
+  mutate(sac = !is.na(sac_name)) 
+
+watersurfaces_area <- watersurfaces_area_sf %>%
+  st_drop_geometry()
+
+watersurfaces_types_2021 <- watersurfaces_populationunits %>%
+  left_join(watersurfaces_area, by = "polygon_id") %>%
+  mutate(type = ifelse(type == "3130", "3130_aom", as.character(type))) %>%
+  mutate(version = "watersurfaces_hab_2021")
+
+watersurfaces_types <- watersurfaces_types_2021 %>%
+  bind_rows(watersurfaces_hab_types_2014)
+
+```
+
+```{r}
+watersurfaces_hab_distribution <- watersurfaces_types %>%
+  group_by(version, type, sac, area_class) %>%
+  summarise(n_watersurfaces = n(),
+            area_ha = sum(area_ha)) %>%
+  ungroup() %>%
+  group_by(version, type, sac) %>%
+  mutate(total_n_sac = sum(n_watersurfaces),
+         total_area_sac = sum(area_ha)) %>%
+  ungroup() 
+
+```
+
+
+
+```{r}
+n_fland <- 40
+n_sac <- 80
+
+samplesize <- watersurfaces_hab_distribution %>%
+  group_by(version, type, area_class) %>%
+  mutate(total_area_class = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  group_by(version, type) %>%
+  mutate(total = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  mutate(take_sample = total >= 50 & area_class %in% c("Opp <= 1 ha", "1 ha < Opp <= 5 ha")) %>%
+  group_by(version, type, take_sample) %>%
+  mutate(n_watersurfaces_sample = sum(n_watersurfaces * take_sample)) %>%
+  ungroup() %>% 
+  group_by(version, type, take_sample, sac) %>%
+  mutate(n_watersurfaces_sample_sac = sum(n_watersurfaces * take_sample)) %>%
+  ungroup() %>%
+  mutate(n_finite_fland = n_watersurfaces_sample * n_fland / (n_fland + (n_watersurfaces_sample - 1)),
+         n_finite_sac = n_watersurfaces_sample_sac * n_sac / (n_sac + (n_watersurfaces_sample_sac - 1)),
+         prop_sac = n_watersurfaces_sample_sac/n_watersurfaces_sample, 
+         samplesize = ifelse(!take_sample, n_watersurfaces,
+                             ifelse(sac, n_finite_sac/2, n_finite_fland * prop_sac/2)),
+         samplesize = pmin(samplesize, n_watersurfaces))
+
+```
+
+Table \@ref(tab:tabtotalsz) shows the total sample size and the total number of sampling units in the sample frame, for both the original sample frame (habitatmap_2014) and the current sample frame (watersurfaces_hab_2021). It is clear that the watersurfaces_hab_2021 sample frame contains a lot more sampling units than habitatmap_2014, which results in a much higher sample size. In Table \@ref(tab:tabsamplesizerepro) the comparison is shown per habitat type and subtype.
+
+```{r samplesizetotal}
+samplesize_total <- samplesize %>%
+  filter(version %in% c("habitatmap_2014", "watersurfaces_hab_2021")) %>%
+  group_by(version, area_class) %>%
+  summarise(samplesize = sum(samplesize),
+            n_watersurfaces = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  mutate(samplesize_show = str_c(round(samplesize), "/", n_watersurfaces),
+         .keep = "unused") %>%
+  spread(key = area_class, value = samplesize_show, fill = 0) %>%
+  arrange(version) 
+```
+
+```{r tabtotalsz}
+samplesize_total %>%
+  kable(caption = "Total sample size per area class for standing water habitat types based on the original design / the total number of sampling units for both the original sample frame (habitatmap_2014) and the current sample frame (watersurfaces_hab_2021)") %>%
+  kable_styling()
+```
+
+
+```{r tabsamplesizerepro}
+
+samplesize_overview <- samplesize %>%
+  filter(version %in% c("habitatmap_2014", "watersurfaces_hab_2021")) %>%
+  group_by(type, version, area_class) %>%
+  summarise(samplesize = sum(samplesize), 
+            n_watersurfaces = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  mutate(samplesize_show = str_c(round(samplesize), "/", n_watersurfaces),
+         .keep = "unused") %>%
+  spread(key = area_class, value = samplesize_show, fill = 0) %>%
+  arrange(type, version) 
+
+samplesize_overview %>%
+  kable(caption = "Total sample size per area class for standing water habitat types based on the original design / the total number of sampling units for both the original sample frame (habitatmap_2014) and the current sample frame (watersurfaces_hab_2021)") %>%
+  kable_styling() %>%
+  collapse_rows(c(1,2)) 
+  
+```
+
+
+
+
+
+
+The total sample size almost doubles.
+Given the available resources, the sample size that results from the current sample frame is not feasible.
+Therefore we will explore some alternative scenarios.
+
+## Alternative scenarios
+
+We propose the following alternative scenario:
+
++ draw a sample for all types with more than 30 watersurfaces in the area classes `Opp <= 1 ha`, `1 ha < Opp <= 5 ha` and `5 ha < Opp <= 50 ha` 
+  + sample size = 80 for Flanders
+  + extra sampling units within sac until 80 sampling units are selected
+  + minimum 40 sampling units for each subtype (select extra sampling units if needed)
+  + finite population correction
+  + distribute sample size over different area classes
+    + using the log of the total area within each area class as weight (alternative 1)
+    + using the square root of the total area within each area class as weight (alternative 2)
+    + dividing the sample size equally over the three area classes (alternative 3)
++ selection of all watersurfaces for other area classes (`Opp > 50 ha`) and other habitat types (type 3110)
+
+
+
+```{r}
+
+samplesize_watersurfaces <- function(watersurfaces_hab_distribution,
+                                     n_fl,
+                                     n_sac,
+                                     n_subtype) {
+  
+  samplesize_fl <- watersurfaces_hab_distribution %>%
+  mutate(main_type = str_sub(type, 1, 4)) %>%
+  group_by(version, main_type, area_class, sac) %>%
+  summarise(area_ha_sac = sum(area_ha),
+            n_watersurfaces_sac = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  group_by(version, main_type, area_class) %>%
+  mutate(n_watersurfaces = sum(n_watersurfaces_sac),
+         area_ha = sum(area_ha_sac)) %>%
+  ungroup() %>%
+  mutate(weight1 = log(area_ha + 1),
+          weight2 = area_ha ^ (1/2)) %>%
+  group_by(version, main_type, sac) %>%
+  mutate(total_area_ha = sum(area_ha * (area_class != ">= 50 ha")),
+         total_watersurfaces = sum(n_watersurfaces * (area_class != ">= 50 ha")),
+         total_weight1 = sum(weight1 * (area_class != ">= 50 ha")),
+         total_weight2 = sum(weight2 * (area_class != ">= 50 ha"))) %>%
+  ungroup() %>%
+  mutate(n_finite_fland = total_watersurfaces * n_fl / (n_fl + (total_watersurfaces - 1))) %>%
+  mutate(samplesize_fl_alt1 = ifelse(area_class != ">= 50 ha", n_finite_fland * weight1 / total_weight1, n_watersurfaces),
+         samplesize_fl_alt2 = ifelse(area_class != ">= 50 ha", n_finite_fland * weight2 / total_weight2, n_watersurfaces),
+         samplesize_fl_alt3 = ifelse(area_class != ">= 50 ha", n_finite_fland /3, n_watersurfaces)) %>%
+  mutate(samplesize_fl_alt1 = pmin(samplesize_fl_alt1 * n_watersurfaces_sac/n_watersurfaces, n_watersurfaces),
+         samplesize_fl_alt2 = pmin(samplesize_fl_alt2 * n_watersurfaces_sac/n_watersurfaces, n_watersurfaces),
+         samplesize_fl_alt3 = pmin(samplesize_fl_alt3 * n_watersurfaces_sac/n_watersurfaces, n_watersurfaces)) 
+
+
+samplesize_sac <- watersurfaces_hab_distribution %>%
+  filter(sac) %>%
+  mutate(main_type = str_sub(type, 1, 4)) %>%
+  group_by(version, sac, main_type, area_class) %>%
+  summarise(area_ha = sum(area_ha),
+            n_watersurfaces = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  mutate(weight1 = log(area_ha + 1),
+          weight2 = area_ha ^ (1/2)) %>%
+  group_by(version, main_type) %>%
+  mutate(total_area_ha = sum(area_ha * (area_class != ">= 50 ha")),
+         total_watersurfaces = sum(n_watersurfaces),
+         total_weight1 = sum(weight1 * (area_class != ">= 50 ha")),
+         total_weight2 = sum(weight2 * (area_class != ">= 50 ha"))) %>%
+  ungroup() %>%
+  mutate(n_finite_sac = total_watersurfaces * n_sac / (n_sac + (total_watersurfaces - 1))) %>%
+  mutate(samplesize_sac_alt1 = ifelse(area_class != ">= 50 ha", n_finite_sac * weight1 / total_weight1, n_watersurfaces),
+         samplesize_sac_alt2 = ifelse(area_class != ">= 50 ha", n_finite_sac * weight2 / total_weight2, n_watersurfaces),
+         samplesize_sac_alt3 = ifelse(area_class != ">= 50 ha", n_finite_sac /3, n_watersurfaces)) %>%
+  mutate(samplesize_sac_alt1 = pmin(samplesize_sac_alt1, n_watersurfaces),
+         samplesize_sac_alt2 = pmin(samplesize_sac_alt2, n_watersurfaces),
+         samplesize_sac_alt3 = pmin(samplesize_sac_alt3, n_watersurfaces))
+
+samplesize_subtype <- watersurfaces_hab_distribution %>%
+  mutate(main_type = str_sub(type, 1, 4)) %>%
+  filter(main_type == "3130") %>%
+  group_by(version, type, area_class, sac) %>%
+  summarise(n_watersurfaces_sac = sum(n_watersurfaces),
+            area_ha_sac = sum(area_ha)) %>%
+  ungroup() %>%
+  group_by(version, type, area_class) %>%
+  mutate(n_watersurfaces = sum(n_watersurfaces_sac),
+         area_ha = sum(area_ha_sac)) %>%
+  ungroup() %>%
+  mutate(weight1 = log(area_ha + 1),
+          weight2 = area_ha ^ (1/2)) %>%
+  group_by(version, type, sac) %>%
+  mutate(total_area_ha = sum(area_ha * (area_class != ">= 50 ha")),
+         total_watersurfaces = sum(n_watersurfaces),
+         total_weight1 = sum(weight1 * (area_class != ">= 50 ha")),
+         total_weight2 = sum(weight2 * (area_class != ">= 50 ha"))) %>%
+  ungroup() %>%
+  mutate(n_finite_subtype = total_watersurfaces * n_subtype / (n_subtype + (total_watersurfaces - 1))) %>%
+  mutate(samplesize_subtype_alt1 = ifelse(area_class != ">= 50 ha", n_finite_subtype * weight1 / total_weight1, n_watersurfaces),
+         samplesize_subtype_alt2 = ifelse(area_class != ">= 50 ha", n_finite_subtype * weight2 / total_weight2, n_watersurfaces),
+         samplesize_subtype_alt3 = ifelse(area_class != ">= 50 ha", n_finite_subtype /3, n_watersurfaces)) %>%
+  mutate(samplesize_subtype_alt1 = pmin(samplesize_subtype_alt1 * n_watersurfaces_sac/n_watersurfaces, n_watersurfaces_sac),
+         samplesize_subtype_alt2 = pmin(samplesize_subtype_alt2 * n_watersurfaces_sac/n_watersurfaces, n_watersurfaces_sac),
+         samplesize_subtype_alt3 = pmin(samplesize_subtype_alt3 * n_watersurfaces_sac/n_watersurfaces, n_watersurfaces_sac))
+
+samplesize_alt <- watersurfaces_hab_distribution %>%
+  mutate(main_type = str_sub(type, 1, 4),
+         n_fl = n_fl,
+         n_sac = n_sac,
+         n_subtype = n_subtype) %>%
+  select(version, n_fl, n_sac, n_subtype, main_type, type, sac, area_class, area_ha, n_watersurfaces) %>%
+  group_by(version, main_type) %>%
+  mutate(n_watersurfaces_sample = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  left_join(select(samplesize_fl, sac, version, main_type, area_class, samplesize_fl_alt1, samplesize_fl_alt2, samplesize_fl_alt3), by = c("version", "main_type", "area_class", "sac")) %>%
+  left_join(select(samplesize_sac, sac, version, main_type, area_class, samplesize_sac_alt1, samplesize_sac_alt2, samplesize_sac_alt3), by = c("version", "main_type", "area_class", "sac")) %>%
+  group_by(version, main_type, sac, area_class) %>%
+  mutate(n_watersurfaces_main_type = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  mutate(samplesize_main_type_alt1 = ifelse(area_class == ">= 50 ha" | n_watersurfaces_sample < 30, n_watersurfaces,
+                                            ifelse(sac, pmax(samplesize_sac_alt1, samplesize_fl_alt1), samplesize_fl_alt1)),
+         samplesize_main_type_alt2 = ifelse(area_class == ">= 50 ha" | n_watersurfaces_sample < 30, n_watersurfaces,
+                                            ifelse(sac, pmax(samplesize_sac_alt2, samplesize_fl_alt2), samplesize_fl_alt2)),
+         samplesize_main_type_alt3 = ifelse(area_class == ">= 50 ha" | n_watersurfaces_sample < 30, n_watersurfaces,
+                                            ifelse(sac, pmax(samplesize_sac_alt3, samplesize_fl_alt3), samplesize_fl_alt3)),
+         samplesize_type_alt1 = samplesize_main_type_alt1 * n_watersurfaces / n_watersurfaces_main_type,
+         samplesize_type_alt2 = samplesize_main_type_alt2 * n_watersurfaces / n_watersurfaces_main_type,
+         samplesize_type_alt3 = samplesize_main_type_alt3 * n_watersurfaces / n_watersurfaces_main_type,
+         ) %>%
+  left_join(select(samplesize_subtype, sac, version, type, area_class, samplesize_subtype_alt1, samplesize_subtype_alt2, samplesize_subtype_alt3), by = c("version", "type", "area_class", "sac")) %>%
+  mutate(samplesize_total_alt1 = round(pmax(samplesize_type_alt1, samplesize_subtype_alt1, na.rm = TRUE)),
+         samplesize_total_alt2 = round(pmax(samplesize_type_alt2, samplesize_subtype_alt2, na.rm = TRUE)),
+         samplesize_total_alt3 = round(pmax(samplesize_type_alt3, samplesize_subtype_alt3, na.rm = TRUE)))
+
+  return(samplesize_alt)
+
+}
+  
+
+samplesize_alt1 <- samplesize_watersurfaces(watersurfaces_hab_distribution = watersurfaces_hab_distribution,
+                                            n_fl = 80, n_sac = 80, n_subtype = 40) %>%
+  mutate(scenario = "alternative 1")
+
+samplesize_alt2 <- samplesize_watersurfaces(watersurfaces_hab_distribution = watersurfaces_hab_distribution,
+                                            n_fl = 80, n_sac = 0, n_subtype = 40) %>%
+  mutate(scenario = "alternative 2")
+
+
+```
+
+```{r}
+samplesize_alt_total <- samplesize_alt1 %>%
+  bind_rows(samplesize_alt2) %>%
+  filter(type != "2190_a") %>%
+  select(version, scenario, n_fl, n_sac, n_subtype, type, area_class, sac, n_watersurfaces, samplesize = samplesize_total_alt3) %>% 
+  group_by(scenario, n_fl, n_sac, n_subtype, version, area_class) %>%
+  summarise(samplesize = sum(samplesize),
+            n_watersurfaces = sum(n_watersurfaces)) %>%
+  ungroup() %>%
+  mutate(samplesize_show = str_c(round(samplesize), "/", n_watersurfaces),
+         .keep = "unused") %>%
+  spread(key = area_class, value = samplesize_show, fill = 0)
+```
+
+Table \@ref(tab:alttotalws) shows the total sample sizes per area class for the different alternative scenarios. Table \@ref(tab:alttypews) shows the sample sizes per type, per area class and inside/outside SAC for the different alternative scenarios.
+
+```{r alttotalws}
+samplesize_alt_total %>%
+  filter(version == "watersurfaces_hab_2021") %>%
+  select(-version) %>%
+  kable(caption = "Alternative sample size scenarios compared the to original design: total number of sampling units/ total number of watersurfaces") %>%
+  kable_styling()
+```
+
+
+```{r alttypews}
+samplesize_alt_overview <- samplesize_alt1 %>%
+  bind_rows(samplesize_alt2) %>%
+  select(version, scenario, n_fl, n_sac, n_subtype, type, area_class, sac, n_watersurfaces, samplesize = samplesize_total_alt3) %>%
+  filter(version %in% c("watersurfaces_hab_2021")) %>%
+  # filter(type != "2190_a") %>%
+  mutate(samplesize_show = str_c(round(samplesize), "/", n_watersurfaces),
+         .keep = "unused") %>%
+  spread(key = area_class, value = samplesize_show, fill = 0) %>%
+  select(type, version, scenario, everything()) 
+
+samplesize_alt_overview %>%
+  arrange(type, scenario) %>%
+  select(-version, -n_fl, -n_sac, -n_subtype) %>%
+  mutate(sac = ifelse(sac, "inside", "outside")) %>%
+  kable(caption = "Alternative sample size scenarios compared the to original design: number of sampling units per type/ total number of watersurfaces per type") %>%
+  kable_styling() %>%
+  collapse_rows(c(1,2, 3), target = 1)
+  
+```
+
+Sample sizes of the alternative scenarios are slightly higher compared to the original sample size (except for 3130_aom).
+However, this increase is smaller compared to the case where the original sample size calculation is applied to watersurfaces_hab.
+

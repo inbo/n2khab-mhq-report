@@ -1,7 +1,7 @@
 
-# Scenario's for the design of MHQ
+# Sample design for terrestrial habitat types
 
-## Habitat types and subtypes included in MHQ
+## Habitat types and subtypes included in MHQ 
 
 As mentioned in @westra2014, MHQ does not contain a monitoring scheme for all habitat types or habitat subtypes that occur in Flanders. For several habitat types a habitat quality monitoring scheme is not considered as a feasible or appropriate approach:
 
@@ -24,13 +24,13 @@ check 2190_mp
 
 
 ```{r}
-habmap_sdz <- read_habitatmap_stdized()
+habmap_terr <- read_habitatmap_terr()
 
-habmap_types <- habmap_sdz$habitatmap_types %>%
+habmap_types <- habmap_terr$habitatmap_terr_types %>%
   filter(phab > 10) %>%
   filter(str_sub(type, 1,3) != "rbb")
 
-habmap_polygons <- habmap_sdz$habitatmap_polygons
+habmap_polygons <- habmap_terr$habitatmap_terr_polygons
 
 types <- read_types() %>%
   select(type, typeclass, typelevel, main_type)
@@ -87,15 +87,27 @@ types_area_strata <- habmap_types %>%
                                ifelse(typeclass == "FW", TRUE, (n_polygons_subtype > n_polygons_min) & (area_subtype > area_min)))
          )
 
-
-
 ```
 
 
 
-## Scenario's for terrestrial habitat types
+## Scenario's for sample design {#scenarioterr}
 
+We will calculate the total number of sampling units that have to be measured per year for different scenario's. The scenarios are characterised by following parameters:
 
++ monitoring cycle: the number of years in which all sampling units have to measured
++ $n_{fl}$: the sample size per habitat type for the whole of Flanders
++ $n_{sac}$: the sample size per habitat type within the Special Areas of Conservation (SAC)
++ $n_{subtype}$: the (minimum) sample size per habitat subtype for the whole of Flanders 
+
+The method for the calculation of the total sample size per habitat type is explained in @westra2014. In a first step a finite population corrections is applied on $n_{fl}$, $n_{sac}$ and $n_{subtype}$. This is because the calculated sample sizes (chapter ) are valid for infinite populations. Yet, most habitat types or subtypes cover a relatively small area and can therefore be considered as a finite population. The finite sample size $n_{finite}$ is calculated as follows:
+
+$$n_{finite}=\frac{Nn_{infinite}}{n_{infinite} + (N-1)}$$
+with 
+
+$$n_{infinite} = \text{infinite sample size}$$
+$$N = \text{total population size}$$
+For the terrestrial habitat types a population unit corresponds with a 32m x 32m grid cell and the total population size is calculated by dividing the total area of the population by the area of a grid cell (approximately 1 ha). Next we distribute $n_{fl_{finite}}$ over the strata *inside sac* and *outside sac* proportional to the area of both strata, and we calculate the extra number of sampling units to reach $n_{sac_{finite}}$ inside sac. Then the total number of sampling units inside and outside sac are distributed over the subtypes proportional to their area to obtain the expected sample size for each stratum. The required sample size per subtype $n_{subtype_{finite}}$ is also distributed over the strata inside sac and outside sac proportional to the area. Finally the extra number of sampling units to reach the required sample size per stratum is calculated.
 
 
 ```{r}
@@ -269,24 +281,20 @@ meetnet_selection <- samplesize_original_detailed %>%
 
 ```
 
+Table \@ref(tab:tabscenario) compares the original design of @westra2014 with three alternative scenario's for open terrestrial habitats. For forest habitat types no alternative scenario's are considered since the monitoring scheme was designed to make it compatible with the Flemish Forest Inventory. The table shows the total sample size for the monitoring cycle and the total sample size per year after applying the finite population correction. The table also gives information on the total number of sampling units initially selected in Flanders ($tot_{fl}$) and the total number of extra sampling units selected in the SAC ($extra_{sac}$) and in the habitat subtypes ($extra_{subtype}$).       
 
+```{r tabscenario}
 
-
-
-## Steekproefgroottes terrestrische habitattypen voor verschillende scenario's
-
-```{r}
-
-scenarios_team <- scenarios %>%
+scenarios_main_type <- scenarios %>%
   filter(n_finite_flanders > 0) %>%
-  group_by(fieldwork_team, type_cat, scenario, n_flanders, n_sac, n_subtype, cycle_years) %>%
+  group_by(fieldwork_team, type_cat, main_type, scenario, n_flanders, n_sac, n_subtype, cycle_years) %>%
   summarise(n_finite_flanders = sum(n_finite_flanders),
             n_extra_sac = sum(n_extra_sac),
             n_extra_subtypes = sum(n_extra_subtypes),
             type_list = str_c(unique(main_type), collapse = ", ")) %>%
   ungroup() %>%
   mutate(n_total = n_finite_flanders + n_extra_sac + n_extra_subtypes,
-         n_total_year = ceiling(n_total/ cycle_years),
+         n_total_year = round(n_total/ cycle_years, 1),
          scenario = factor(scenario, levels = c("original", "alternative 1", "alternative 2", "alternative 3", "alternative 4"))) %>%
   arrange(fieldwork_team, scenario)
 
@@ -304,17 +312,20 @@ scenarios_total <- scenarios %>%
   arrange(scenario)
 
 scenarios_total %>%
-  kable() %>%
+  select("category" = type_cat, scenario, "cycle (years)" = cycle_years, "$n_{fl}$"  = n_flanders, "$n_{sac}$" = n_sac, "$n_{subtype}$" = n_subtype, "$tot_{fl}$" =  n_finite_flanders, "$extra_{sac}$" =  n_extra_sac, "$extra_{subtype}$" =  n_extra_subtypes, "total per cycle" = n_total, "total per year" = n_total_year) %>%
+  arrange(desc(category)) %>%
+  kable(booktabs = TRUE,
+        align = "c",
+        escape = FALSE,
+        caption = "Comparison between original design and three alternative scenario's. The selected scenario's are shown in bold.") %>%
   kable_styling() %>%
-  collapse_rows(c(1), target = 1)
+  collapse_rows(c(1), target = 1) %>%
+  row_spec(c(4,6), bold = TRUE)
 
 #scenarios_team %>%
 #  write.csv2("../output/scenario_team.csv")
 ```
 
-## Keuze scenario
-
-We kiezen voor de open habitats het scenario alternatief 3. Voor boshabitats behouden we het originele scenario.
 
 ```{r}
 samplesize_scenario3_nonforest <- calc_finitsamplesize_terrhab(types_area_strata = types_area_strata_nonforest, n_type_sac = 80, n_type_flanders = 80, n_subtype_flanders = 40)
@@ -328,5 +339,7 @@ samplesize_scenario3_detailed <- bind_rows(samplesize_scenario3_nonforest$sample
 
 ```
 
+By comparing the costs (the number of sampling units that have to be measured per year) and the benefits (the minimal differences for status and trend that can be detected), we decide to implement alternative 3 for the open habitat types. It allows the estimation of short-term trends (12 year) in habitat quality based on paired observations, as the monitoring cycle is lowered to 6 years. It also allows the estimation of the status of habitat quality on the scale of Flanders every six years with (approximately) the same precision as the original design, as the sample size per habitat type is kept to 80. The cost of alternative 3 is only slightly higher (11 extra sampling units per year) compared to the original design.    
 
+Annex \@ref(annex3) gives an overview of the sample size per habitat type and subtype.
 
