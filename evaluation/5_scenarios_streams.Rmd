@@ -1,0 +1,250 @@
+# Sample design for stream habitat types
+
+## Stream habitat types included in MHQ
+
+Only one stream habitat type is included in MHQ: habitat type 3260 (Water courses of plain to montane levels with the *Ranunculion fluitantis* and Callitricho-Batrachion vegetation). Habitat type 3270 also occurs in Flanders, yet its habitat quality is assessed based on the characteristics of the river bank vegetation. Furthermore it is considered a very dynamic habitat type for which a monitoring scheme is not feasible.    
+
+## Original design
+
+The sample frame of original design is based on version 1.4 of the 3260 habitat map [@leyssen2012]. A sampling unit corresponds with a river segment of 100 meter. 
+
+In the original design following strata were used:
+
++ the position relative to SAC:
+  + intersects with SAC or downstream of SAC
+  + outside of SAC (and not downstream of SAC)
++ size of catchment area
+  + smaller than 10 km²
+  + larger than 10 km²
+
+
+```{r}
+
+map_3260_original <- read_sf("data/habitatstreams/v1_4", "BasisbestandSteekproeftrekkingHT3260", crs = 31370)
+
+map_3260_original_strata <- map_3260_original %>%
+  mutate(catchment_area = ifelse(str_sub(WLcode, 1, 2) %in% c("VL", "L1"), "> 10 km²",
+                                 ifelse(str_sub(WLcode, 1, 2) == "L2", "< 10 km²", NA)))
+
+map_3260 <- map_3260_original %>%
+  group_by(OBJECTID) %>%
+  mutate(length_3260 = drop_units(st_length(geometry))) %>%
+  ungroup() %>%
+  dplyr::select(name = naam, wl_code = WLcode, catchment_area = SGO__km._, sac = SBZ, province = provincie, length_3260) %>%
+  mutate(sac = ifelse(sac %in% c("intersect SBZ", "sa"), "intersecting or downstream",
+                      ifelse(sac == "buiten", "outside", NA)),
+         catchment_area = ifelse(catchment_area %in% c("10-50", ">50"), "> 10 km²",
+                                 ifelse(catchment_area == "<10", "< 10 km²", NA)))
+```
+
+
+```{r}
+n_flanders <- 80
+n_sac <- 170
+n_sac_update <- 80
+
+```
+
+An initial sample size of 80 in Flanders ($n_{fl}$) was chosen. Next, extra sampling units were selected within the stratum 'intersects with sac and downstream of sac' until a sample size of 170 ($n_{sac}$) was reached. This is because most policy measures to improve the habitat quality are taken within SAC. Therefore we expect that differences in habitat quality will most likely occur in river segments that intersect with SAC or are situated downstream of SAC (and we want to be able to detect those differences).
+
+In a next step, the sample size is distributed over catchment area classes '< 10 km²' and '> 10 km²' proportional to the length of 3260 in each class. The reason to include these strata in the original design, is that @westra2014 expected to be able to make use of the data collected by the Flemish Environmental Agency (VMM). The VMM makes use of the same field protocol as INBO, but only measures sampling units in catchment areas larger than 10 km². By dividing the sample size over the strata '< 10 km²' and '> 10 km²' and subtracting the number of sampling units measured by VMM in the stratum '> 10 km²', we get the remaining number of sampling units per stratum that have to be measured by INBO to get a representative sample. 
+
+However, due to organisational issues VMM could not make a long term commitment for measuring sufficient sampling units in 3260 habitat. Therefore INBO decided to measure all sampling units in the monitoring scheme. As a consequence the stratum 'catchment area' is no longer useful and will be removed from the design to reduce its complexity (see further).      
+
+
+```{r}
+calc_finite_samplesize <- function(N, n_infinite){
+  n_finite <- N * n_infinite/(n_infinite + (N - 1))
+  return(n_finite)
+}
+
+```
+
+Finally, the sample size for a finite population was calculated using the finite population correction. The total population size is the number of 100 meter segments with 3260 habitat. In the original design the selected sampling units are measured in a monitoring cycle of 12 years.  
+
+```{r}
+sac_3260 <- map_3260 %>%
+  st_drop_geometry() %>%
+  group_by(sac) %>%
+  summarise(length_3260 = sum(length_3260)) %>%
+  mutate(proportion_3260 = length_3260/sum(length_3260) * 100) %>%
+  ungroup() %>%
+  mutate(N = length_3260/100)
+
+N_flanders <- round(sum(sac_3260$N), 0)
+
+N_sac <- (sac_3260 %>%
+  filter(sac == "intersecting or downstream"))$N %>%
+  round(0)
+
+n_finite_flanders <- calc_finite_samplesize(N = N_flanders, n_infinite = n_flanders) %>%
+  round(0)
+
+n_finite_sac <- calc_finite_samplesize(N = N_sac, n_infinite = n_sac) %>%
+  round(0)
+
+proportion_outside <- (sac_3260 %>%
+  filter(sac =="outside"))$proportion_3260
+
+n_finite_outside <- (n_finite_flanders * proportion_outside /100) %>%
+  round(0)
+
+sample_size<- tibble(sac = c("intersecting or downstream", "outside"),
+                      n_finite = c(n_finite_sac, n_finite_outside)) %>%
+  mutate(version = "v2014")
+
+sample_size_strata <- map_3260 %>%
+  st_drop_geometry() %>%
+  group_by(sac, catchment_area) %>%
+  summarise(length_3260 = sum(length_3260)) %>%
+  mutate(proportion_3260 = length_3260/sum(length_3260) * 100) %>%
+  ungroup() %>%
+  left_join(sample_size, by = "sac") %>%
+  mutate(n_finite_stratum = round(n_finite * proportion_3260/100, 0)) %>%
+  arrange(version)
+  
+#write_vc(sample_size_strata, file = "mhq_streams_samplesize_v2014", root = "../output", sorting = c("sac", "catchment_area", "version"), strict = FALSE)
+```
+
+
+Table \@ref(tab:tabszstream) shows the original sample size (per monitoring cycle) for habitat 3260 per stratum. 
+
+```{r tabszstream}
+sample_size_strata %>%
+  mutate(length_3260 = round(length_3260/1000, 1),
+         proportion_3260 = round(proportion_3260, 0)) %>%
+  select(sac, "catchmentarea" = catchment_area, "length 3260 (meters)" = length_3260, n = n_finite_stratum) %>%
+  kable(booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE) %>%
+  collapse_rows(c(1, 2))
+```
+
+Note: in @westra2014 an error was made when distributing the sample size over the different strata. So the sample size for each stratum is different here, but correct.
+
+## Update of the sample design for 3260
+
+In the updated design we use version 1.7 of the habitat map of 3260 [@inbo2020_3] as the sample frame. It can be imported in R by using the function `read_habitatstreams()` of the n2khab package [@vanderhaeghe2022]. Another change in the sample design is that we will no longer make use of the stratum 'catchement area' as explained above. Finally, we will use the same design parameters as the terrestrial habitat types in order to get better information on trends in habitat quality:
+
++ monitoring cycle = 6 years
++ $n_{fl} = 80$
++ $n_{sac} = 80$
+
+```{r}
+
+map_3260_new <- read_sf("data/habitatstreams/v1_7", "BasisbestandSteekproefvernieuwingHT3260_SBZ", crs = 31370)
+
+habitatstreams <- read_habitatstreams()
+
+path <- fileman_up("n2khab_data")
+
+file <- "10_raw/habitatstreams/habitatstreams.shp"
+
+filepath <- file.path(path, file)
+
+version <- ifelse(md5sum(filepath) == "5c94b58c9dc7809c4eeeaf660aa3323c",
+                  "v1.7", "unknown") 
+
+```
+
+```{r}
+
+map_3260_new <- map_3260_new %>%
+  mutate(sac_streams = ifelse(SBZ %in% c("intersect SBZ", "sa"), "intersecting or downstream",
+                      ifelse(SBZ == "buiten", "outside", NA)))
+
+map_3260_new_stdized <- map_3260_new %>%
+  mutate(length_3260 = drop_units(st_length(geometry))) %>%
+  st_drop_geometry() %>%
+  select(sac_streams, length_3260)
+
+habitatstreams<- habitatstreams %>%
+  mutate(length_3260 = drop_units(st_length(geometry)))
+
+diff_length <- sum(map_3260_new_stdized$length_3260) - sum(habitatstreams$length_3260)
+# a small part of habitatstreams ('Boshovenloop') is not in BasisbestandSteekproefvernieuwingHT3260_SBZ, for this part sac_strams = outside
+
+map_3260_new_buffer <- map_3260_new %>%
+  st_buffer(1) %>%
+  select(sac_streams)
+
+habitatstreams_sac <-  habitatstreams %>%
+  st_join(map_3260_new_buffer, largest = TRUE) %>%
+  mutate(sac_streams = ifelse(is.na(sac_streams), "outside", sac_streams))
+
+```
+
+
+
+```{r, warning = FALSE}
+           
+sac_3260 <- habitatstreams_sac %>%
+  st_drop_geometry() %>%
+  group_by(sac_streams) %>%
+  summarise(length_3260 = sum(length_3260)) %>%
+  mutate(proportion_3260 = length_3260/sum(length_3260) * 100) %>%
+  ungroup() %>%
+  mutate(N = length_3260/100)
+
+N_flanders <- round(sum(sac_3260$N), 0)
+
+N_sac <- (sac_3260 %>%
+  filter(sac_streams == "intersecting or downstream"))$N %>%
+  round(0)
+
+n_finite_flanders <- calc_finite_samplesize(N = N_flanders, n_infinite = n_flanders) %>%
+  round(0)
+
+n_finite_sac <- calc_finite_samplesize(N = N_sac, n_infinite = n_sac_update) %>%
+  round(0)
+
+proportion_outside <- (sac_3260 %>%
+  filter(sac_streams =="outside"))$proportion_3260
+
+n_finite_outside <- (n_finite_flanders * proportion_outside /100) %>%
+  round(0)
+
+sample_size <- data.frame(sac_streams = c("intersecting or downstream", "outside"),
+                      n_finite = c(n_finite_sac, n_finite_outside)) %>%
+  as_tibble()
+
+sample_size_3260_update <- sac_3260 %>%
+  left_join(sample_size, by = "sac_streams") %>%
+  select(-N) %>%
+  mutate(version = "v2021")
+
+```
+
+```{r}
+
+sample_size_3260_update %>%
+  mutate(length_3260 = round(length_3260/1000, 1),
+         proportion_3260 = round(proportion_3260)) %>%
+  select(sac = sac_streams, "length 3260 (km)" = length_3260, n = n_finite) %>%
+  kable(booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE) 
+```
+
+
+
+In the table below the sample size for both versions are compared. The updated design results in a slightly higher sample size per year.
+
+```{r}
+
+sample_size_strata %>%
+  rename(sac_streams = sac) %>%
+  bind_rows(sample_size_3260_update) %>%
+  distinct(version, sac_streams, n_finite) %>%
+  mutate(monitoring_cycle = ifelse(version == "v2014", 12, 6)) %>%
+  group_by(version, monitoring_cycle) %>%
+  summarise(n = sum(n_finite)) %>%
+  ungroup() %>%
+  mutate(n_year = round(n/monitoring_cycle),
+         version = ifelse(version == "v2014", "original design", "updated design")) %>%
+  select(version, "monitoring cycle" = monitoring_cycle, "n per cycle" = n, "n per year" = n_year) %>%
+  kable(booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE) 
+```
+
+
+
+

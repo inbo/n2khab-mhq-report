@@ -3,9 +3,9 @@
 
 Sample size calculations provide an insight in the relationship between sample size and the minimal detectable effect size for a given significance level $\alpha$ and power $\pi$. $\alpha$ is the probability of a type I error, i.e. the probability of concluding that there is no effect based on a the sample, when in reality there is an effect. $\pi$ is the probability to detect an effect based on a sample, when the effect also exists in reality.
 
-The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@westra2014]. We will first reproduce the sample size calculations in [@westra2014]. Next we will also perform a sample size calculation for the trend in habitat quality.
+The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@westra2014]. We will first reproduce the sample size calculations in @westra2014. Next we will also perform a sample size calculation for the trend in habitat quality.
 
-As in [@westra2014], we will choose a power $\pi$ of 0.80 and a significance level $\alpha$ of 0.05.    
+As in @westra2014, we will choose a power $\pi$ of 0.80 and a significance level $\alpha$ of 0.05.    
 
 ## Habitat quality status
 
@@ -208,7 +208,7 @@ data_sim %>%
 
 ```
 
-Table \@ref(tab:tab-powertrend) gives an overview of the results for different values for the dynamics. With a sample size of 170 we can detect a difference in habitat quality of about 5 % when dynamics are low (with $\alpha$ = 0.05 and $\beta$ = 0.8) and a difference of 9 % when dynamics are high.
+Table \@ref(tab:tab-powertrend2) gives an overview of the results for different values for the dynamics. With a sample size of 170 we can detect a difference in habitat quality of about 5 % when dynamics are low (with $\alpha$ = 0.05 and $\beta$ = 0.8) and a difference of 9 % when dynamics are high.
 
 ```{r}
 data_sim_tabel_40 <- data_sim %>%
@@ -265,8 +265,7 @@ data_sim_tabel %>%
         booktabs = TRUE,
         align = "c") %>%
   kable_styling() %>%
-  add_header_above(c(" " = 1, "net decrease or increase (%)" = 3)) %>%
-  collapse_rows(1)
+  add_header_above(c(" " = 1, "net decrease or increase (%)" = 3))
   
 ```
 
@@ -314,7 +313,7 @@ options(knitr.kable.NA = '')
 
 dynamics_forest %>%
   select("habitat type" = type, "$n_{paired}$" = n_gepaard, "$n_{01}$" = n_01 , "$n_{10}$" = n_10, dynamics) %>%
-  kable(caption = "Inschating van de dynamics van de boshabitattypen op basis van de gegevens van de Vlaamse bosinventarisatie",
+  kable(caption = "Observed dynamics for forest habitat types based on the data of the Flemish Forest Inventory",
         booktabs = TRUE,
         escape = FALSE) %>%
   kable_styling()
@@ -357,16 +356,16 @@ sim_data %>%
        y = "Detectable effect") 
 ```
 
-```{r tab-powerd}
+```{r powerd}
 sim_data %>%
   filter(n %in% c(40, 80, 170, 400)) %>%
   mutate(d = round(d, 3)) %>%
   arrange(alpha, n) %>%
   dplyr::select("Sample size" = n, "Detectable effect" = d) %>%
   unique() %>%
-  kable(caption = "Detectable effect as a function of sample size and significance level with $\\pi=0.80$") %>%
-  kable_styling() %>%
-  collapse_rows(1)
+  kable(caption = "Detectable effect as a function of sample size and significance level with $\\pi=0.80$",
+        booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE) 
   
 ```
 
@@ -395,10 +394,10 @@ sim_data %>%
   arrange(alpha, n) %>%
   dplyr::select("sample size" = n, everything()) %>%
   select(-alpha) %>%
-  kable(caption = "Detectable mean difference (%) as a function of sample size and standard deviation of the difference with $\\alpha=0.05$ and $\\pi=0.80$" ) %>%
+  kable(caption = "Detectable mean difference as a function of sample size and standard deviation of the difference with $\\alpha=0.05$ and $\\pi=0.80$",
+        booktabs = TRUE) %>%
   kable_styling() %>%
-  add_header_above(c(" " = 1, "Standaard deviation of difference" = 3)) %>%
-  collapse_rows(1)
+  add_header_above(c(" " = 1, "sd difference" = 3))
   
 ```
 
@@ -461,20 +460,22 @@ verschil_aandeel_gunstig <- verschil_aandeel_gunstig %>%
   bind_rows(verschil_aandeel_gunstig_tot)
 ```
 
-Table \@ref(tab:tabmeandifference) gives the mean difference of the proportion of favourable indicators between period 2 and period 1, the standard deviation of the difference and the detectable effect size ($d$). The table also show the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). The standard deviation of the differences ranges approximately between de 7% and 11%.
+Table \@ref(tab:tabmeandif) gives the mean difference of the proportion of favourable indicators between period 2 and period 1, the standard deviation of the difference and the detectable effect size ($d$). The table also show the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). The standard deviation of the differences ranges approximately between de 7% and 11%.
 
 When the estimated effect size ($d$) would correspond with the true effect size, a sample size of 80 would be sufficient to detect the effect for 9130 and 9140 with as can be seen in Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd). For the other habitat types we would need a higher sample size, but these are quite small effect sizes.    
 
-```{r tabmeandifference}
+```{r tabmeandif}
 verschil_aandeel_gunstig %>%
-  dplyr::select("habitat type" = type, "sample size" = n, "mean difference" = mean_diff, "standard devitation of difference" = sd_diff, d, "p-value" = t.test_p_value, conclusion = uitspraak) %>%
-  kable() %>%
-  kable_styling()
+  dplyr::select("habitat type" = type, "sample size" = n, "mean difference" = mean_diff, "sd difference" = sd_diff, d, "p-value" = t.test_p_value, conclusion = uitspraak) %>%
+  kable(caption = "Observed difference of the proportion of favourable indicators for forest habitat types",
+        booktabs = TRUE) %>%
+  kable_styling() %>%
+  column_spec(4, width = "2.5cm")
 
 ```
-Table \@ref(tab:tabdiffdetect1) shows the range of the minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes. This is based on the range of values for the standard deviation of differences as shown in Table \@ref(tab:tabmeandifference).    
+Table \@ref(tab:tabdiffdetect1) shows the range of the minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes. This is based on the range of values for the standard deviation of differences as shown in Table \@ref(tab:tabmeandif).    
 
-```{r tabdiffdetect1}
+```{r diffdetect1}
 
 verschil_aandeel_gunstig_detecteerbaar <- sim_data %>%
   filter(n %in% c(40, 80, 170)) %>%
@@ -490,10 +491,11 @@ verschil_aandeel_gunstig_detecteerbaar <- sim_data %>%
 
 ```
 
-```{r}
+```{r tabdiffdetect1}
 verschil_aandeel_gunstig_detecteerbaar %>%
-  select( "sd of difference" = sd_diff_range, "sample size" = n, d, "detectable difference" = mean_diff_range) %>%
-  kable() %>%
+  select( "sd difference" = sd_diff_range, "sample size" = n, d, "detectable difference" = mean_diff_range) %>%
+  kable(caption = "Minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes",
+        booktabs = TRUE) %>%
   kable_styling() %>%
   collapse_rows(1)
   
@@ -580,17 +582,20 @@ verschil_voorwaarden <- verschil_voorwaarden %>%
   bind_rows(verschil_voorwaarden_tot)
 ```
 
-In Tabel \@(tab:tabindicatoren) geven we een overzicht van de geobserveerde effectgroottes van de indicatoren voor 9120 en 91E0. We geven hierin ook de uitkomst van de gepaarde t-test op basis van de huidige sample size. We kunnen ook de d-waarden vergelijken met de waarden in Tabel \@(tab:tab-powerd) om te evalueren welke effectgroottes we kunnen observeren met een bepaalde sample size (in de veronderstelling dat de d-waarden in Tabel \@(tab:tab-powerd) de reële waarden zijn).
 
-Table \@ref(tab:tabindicatoren) gives the observed effect size $d$ for the habitat quality indicators. The table also show the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). We can also compare $d$ with the values in Table \@(tab:tab-powerd) to evaluate which differences can be detected for different sample sizes (assuming that the observed $d$ values are the true values). 
+Table \@ref(tab:tabindicatoren) gives the observed effect size $d$ for the habitat quality indicators. The table also show the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). We can also compare $d$ with the values in Table \@ref(tab:powerd) to evaluate which differences can be detected for different sample sizes (assuming that the observed $d$ values are the true values). 
 
 ```{r tabindicatoren}
 verschil_voorwaarden %>%
   filter(type %in% c("9120", "91E0", "91xx")) %>%
-  dplyr::select("habitat type" = type, "sample size" = n, indicator = voorwaarde_engels, "mean difference" = mean_diff, "standard deviation difference" = sd_diff, d, "p-value (t-test)" = t.test_p_value, conclusion = uitspraak) %>%
-  kable(caption = "Observed effect size ($d$) for four habitat quality indicators of habitattype 9120") %>%
+  dplyr::select("habitat type" = type, "sample size" = n, indicator = voorwaarde_engels, "mean diff" = mean_diff, "sd diff" = sd_diff, d, "p-value" = t.test_p_value, conclusion = uitspraak) %>%
+  kable(caption = "Observed effect size ($d$) for four habitat quality indicators",
+        booktabs = TRUE) %>%
   kable_styling() %>%
-  collapse_rows(c(1, 2))
+  column_spec(3, width = "4cm") %>%
+  column_spec(c(4,5,7), width = "1cm") %>%
+  column_spec(c(1, 2), width = "0.8cm") %>%
+  collapse_rows(c(1, 2)) 
 ```
 
 
@@ -624,8 +629,11 @@ Table \@ref(tab:tabmind) shows the range of  the detectable mean difference for 
 ```{r tabmind}
 verschil_voorwaarden_detecteerbaar %>%
   arrange(voorwaarde_engels) %>%
-  select(indicator = voorwaarde_engels, "sd of difference" = sd_diff_range, "sample size" = n,  d, "detectable difference" = mean_diff_range) %>%
-  kable(caption = "Expected range for minimum detectable difference for habitat quality indicators") %>%
+  select(indicator = voorwaarde_engels, "sd difference" = sd_diff_range, "sample size" = n,  d, "detectable difference" = mean_diff_range) %>%
+  kable(caption = "Expected range for minimum detectable difference for habitat quality indicators",
+        booktabs = TRUE) %>%
   kable_styling() %>%
+  column_spec(1, width = "4cm") %>%
+  column_spec(c(2,3,5), width = "2cm") %>%
   collapse_rows(c(1, 2))
 ```

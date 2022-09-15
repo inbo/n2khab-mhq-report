@@ -18,19 +18,26 @@ main_types_names <- read_types() %>%
   distinct(typeclass_name, main_type, type_name)
   
 table_types <- main_types_names %>%
+  filter(!str_detect(main_type, "rbb")) %>%
   left_join(subtype_names, by = "main_type")
 
 table_types %>%
-  select("habitat category" = typeclass_name, code = main_type, "habitat type" = type_name, code_st = subtype, "habitat subtype" = subtype_name) %>%
-  kable() %>%
-  kable_styling() %>%
-    collapse_rows(c(1, 2, 3))
+  mutate(type_name = str_c(type_name, " (", main_type,")"),
+         subtype_name = str_c(subtype_name, " (", subtype, ")")) %>%
+  select("habitat category" = typeclass_name, "habitat type" = type_name, "habitat subtype" = subtype_name) %>%
+  kable(booktabs = TRUE,
+        longtable = TRUE,
+        caption = "Habitat types and subtypes in Flanders") %>%
+  kable_styling(latex_options = c("scale_down")) %>%
+    column_spec(1, width = "0.5cm") %>%
+    column_spec(c(2,3), width = "7cm") %>%
+    collapse_rows(c(1, 2), row_group_label_position = 'stack')
   
 ```
 
 # Habitat types and subtypes included in MHQ {#annex2} 
 
-Table \@ref(tab:tabschemes) gives an overview of the habitat types for which a habitat quality monitoring scheme was developed. The table also provides the reason why a monitoring scheme was not considered the most appropriate approach for several habitat types. Terrestrial habitat types are considered very rare when the area is lower than 10 ha or when the habitat type occurs on less than 15 locations. The area and the number of location was derived from the the 2020 version of the Habitat map [@desaeger2020].   
+Table \@ref(tab:tabschemes) gives an overview of the habitat types for which a habitat quality monitoring scheme was developed. The table also provides the reason why a monitoring scheme was not considered the most appropriate approach for several habitat types. Terrestrial habitat types are considered very rare when the area is lower than 10 ha or when the habitat type occurs on less than 15 locations. The area and the number of location was derived from the the 2020 version of the Habitat map [@inbo2020].   
 
 ```{r tabschemes}
 
@@ -43,19 +50,22 @@ maintype_selection <- types_area_strata %>%
                                       ifelse(main_type %in% c("6430"), "no accurate sample frame", 
                                              ifelse(main_type %in% c("9110"), "low priority", 
                                              ifelse(sample_type == "no" & (area <= 10 | n_polygons <= 15) , "very rare terrestrial type", ""))))))) %>%
-  select("code habitat type" = main_type, "area (ha)" = area,  "# locations" = n_polygons, "monitoring scheme" = sample_type, "reason" = reden) %>%
+  select("code type" = main_type, "area (ha)" = area,  "# locations" = n_polygons, "monitoring scheme" = sample_type, "reason" = reden) %>%
   unique()
   
 maintype_selection %>%
-  kable(caption = "Selection of the habitat types for which a monitoring scheme is implemented") %>%
-  kable_styling()
+  kable(caption = "Selection of the habitat types for which a monitoring scheme is implemented",
+        booktabs = TRUE,
+        longtable = TRUE) %>%
+  kable_styling(latex_options = c("repeat_header")) %>%
+  column_spec(c(1,4), width = "1.5cm")
 
 ```
 
 
 
 
-Table \@ref(tab:tabschemes) gives an overview of which habitat subtypes are considered for oversampling. 
+Table \@ref(tab:tabschemes2) gives an overview of which habitat subtypes are considered for oversampling. 
 
 ```{r tabschemes2}
 subtype_selection <- types_area_strata %>%
@@ -68,7 +78,56 @@ subtype_selection <- types_area_strata %>%
   unique() 
   
 subtype_selection %>%
-  kable(caption = "Oversampling habitat subtypes") %>%
+  kable(caption = "Oversampling habitat subtypes",
+        booktabs = TRUE) %>%
   kable_styling() %>%
   collapse_rows(1)
 ```
+
+
+# Sample size per habitat type and subtype {#annex3} 
+
+Table \@ref(tab:tabsamplesizeterr) provides an overview per habitat type of:
+
++ total initial sample size for Flanders ($tot_{fl}$)
++ number of extra sampling units selected within the SAC ($extra_{sac}$)
++ number of extra sampling units selected per subtype ($extra_{subtype}$)
++ total overall sample size for the monitoring cycle
++ total overall sample size per year
+
+
+
+```{r tabsamplesizeterr, eval=TRUE}
+
+scenarios_subtype <- scenarios %>%
+  filter(type_cat == "forest type" | scenario == "alternative 3") %>%
+  filter(typelevel == "subtype", ) %>%
+  select(main_type, subtype = type, n_extra_subtypes)
+
+scenarios_main_type %>%
+  filter(type_cat == "forest type" | scenario == "alternative 3") %>%
+  arrange(main_type) %>%
+  select("habitat type" = main_type, "cycle (years)" = cycle_years,  "tot fl" =  n_finite_flanders, "extra sac" =  n_extra_sac,  "extra subtype" =  n_extra_subtypes, "total per cycle" = n_total, "total per year" = n_total_year) %>%
+  kable(booktabs = TRUE,
+        caption = "Sample size per habitat type",
+        align = "lccclccc",
+        longtable = TRUE) %>%
+  kable_styling(latex_options = c("repeat_header")) %>%
+  column_spec(c(1, 2, 3, 4), width = "1cm") %>%
+  column_spec(c(5, 6, 7), width = "1.5cm") 
+```
+
+
+Table \@ref(tab:tabsamplesizeterrst) shows the number of extra sampling units per habitat subtype.
+
+```{r tabsamplesizeterrst}
+scenarios_subtype %>%
+  arrange(main_type) %>%
+  semi_join(scenarios_main_type, by = "main_type") %>%
+  select("habitat type" = main_type, subtype,  "extra subtype" =  n_extra_subtypes) %>%
+  kable(booktabs = TRUE,
+        caption = "number of extra sampling units per habitat subtype") %>%
+  kable_styling() %>%
+  collapse_rows(1)
+```
+
