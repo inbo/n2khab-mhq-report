@@ -1,5 +1,5 @@
 
-# Sample size calculations
+# Sample size evaluation {#samplesize}
 
 Sample size calculations provide an insight in the relationship between sample size and the minimal detectable effect size for a given significance level $\alpha$ and power $\pi$. $\alpha$ is the probability of a type I error, i.e. the probability of concluding that there is no effect based on a the sample, when in reality there is an effect. $\pi$ is the probability to detect an effect based on a sample, when the effect also exists in reality.
 
@@ -13,7 +13,7 @@ As in @westra2014, we will choose a power $\pi$ of 0.80 and a significance level
 
 The quality of a habitat type is unfavourable (on a regional scale) when more than 25% of the habitat area has a bad quality (on a local scale). Here we want to determine the minimal detectable difference from the 25%-threshold.
 
-For a straightforward sample size calculation for the minimal detectable difference from a threshold value, we can apply the *proportion test* [@cohen1988] using de function `pwr.p.test` of the pwr package [@champely2020].
+For a straightforward sample size calculation for the minimal detectable difference from a threshold value, we can apply the *proportion test* [@cohen1988] using the function `pwr.p.test` of the pwr package [@champely2020].
 
 ```{r hulpfunctie}
 
@@ -77,7 +77,8 @@ sim_data_tabel <- sim_data %>%
 sim_data_tabel %>%
   kable(align = "c", 
         caption = "Minimal detectable effect as a function of the sample size with $\\alpha = 0.05$ and $\\pi = 0.80$",
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling() %>%
   add_header_above(c(" " = 3, "Minimal detectable effect" = 2))
 ```
@@ -115,7 +116,7 @@ status_types <- bind_rows(
 
 ```
 
-In Figure \@ref(fig:figrapportage) we show the estimated habitat proportions with bad quality as reported in 2019. This reporting was based on the plots that where measured in the period 2014 - 2018. This means that only a subset of the total sample size was measured at that time, as the total monitoring cycle was 12 years. Only for the more common forest habitat types we already reached the total sample size, as we could make use of the measurements of the Flemish Forest Inventory.
+In Figure \@ref(fig:figrapportage) we show the estimated habitat proportions with bad quality as reported in 2019. This reporting was based on the plots that were measured in the period 2014 - 2018. This means that only a subset of the total sample size was measured at that time, as the total monitoring cycle was 12 years. Only for the more common forest habitat types we already reached the total sample size, as we could make use of the measurements of the Flemish Forest Inventory.
 
 The habitat types are represented by the habitat code and the colour corresponds with the habitat quality evaluation: favourable, unknown or unfavourable. For many habitat types we can already conclude that the quality is unfavourable, even with a sample size much smaller than 170. This is because in many cases the habitat proportion with bad quality is much higher than the 25%-threshold and such large differences can be detected with sufficient power based on smaller sample sizes, as can be seen in Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil). Only for two habitat types (2160 and 2190) we need a higher precision in order to conclude if the proportion with bad quality is higher or lower than the 25%-threshold.
 
@@ -141,13 +142,15 @@ ggplot(data = status_types, aes(x = n, y = prop_slecht, ymin = prop_slecht_lci, 
 
 ```
 
+\needspace{100mm}
+
 ## Trends in habitat quality
 
 ### Difference between proportions
 
-To determine the detectable difference in habitat proportions with bad quality between two points in time, we apply the McNemar test [@chow2003] using the function `McNemar.Test` in the R package TrialSize [@zhang2020].
+To determine the detectable difference in habitat proportions with bad quality between two points in time, we apply the *McNemar test* [@chow2003] using the function `McNemar.Test` in the R package TrialSize [@zhang2020].
 
-The habitat monitoring scheme consists of permanent plots resulting in paired observations. When the habitat quality in a plot is measured at two time points $t_1$ and $t_2$, we can have one of following combinations.
+The habitat monitoring scheme consists of permanent plots resulting in paired observations. When the habitat quality in a plot is measured at two time points $t_1$ and $t_2$, we can have one of the following combinations.
 
 ```{r}
 data.frame(
@@ -157,9 +160,10 @@ data.frame(
 ) %>%
   select("$t_1$" = t_1, bad, good) %>%
   kable(booktabs = TRUE,
-        escape = FALSE) %>%
+        escape = FALSE, 
+        format = format_table) %>%
   kable_styling() %>%
-  column_spec(1, bold = TRUE) %>%
+ # column_spec(1, bold = TRUE) %>%
   add_header_above(c(" " = 1, "$t_2$" = 2), escape = FALSE)
 
 
@@ -169,7 +173,7 @@ The difference in the proportion with bad quality between $t_1$ and $t_2$ corres
 
 $$\frac{hab_{01} + hab_{10}}{| hab_{01} - hab_{10}|}$$
 
-Suppose that the net proportion with bad quality decrease with 10 %, than the dynamics are equal to 2 when 15% of the habitat area changes from good to bad and 5% of the habitat area from bad to good. The higher the dynamics, the smaller the minimal delectable difference.
+Suppose that the net proportion with bad quality decreases with 10 %, then the dynamics are equal to 2 when 15% of the habitat area changes from good to bad and 5% of the habitat area from bad to good. The higher the dynamics, the smaller the minimal delectable difference.
 
 ```{r figpowertrend, fig.cap = "Minimal detectable effect as a function of sample size and the dynamics with $\\alpha$ = 0.05 and $\\pi$ = 0.80"}
 
@@ -263,13 +267,14 @@ data_sim_tabel <- bind_rows(data_sim_tabel_40,
 data_sim_tabel %>%
   kable(caption = "Minimal detectable difference as a function of sample size and dynamics (low dynamics = 1.02, medium dynamics =  1.5 and high dynamics = 2) with $\\alpha$ = 0.05 and $\\pi$ = 0.80",
         booktabs = TRUE,
-        align = "c") %>%
+        align = "c", 
+        format = format_table) %>%
   kable_styling() %>%
   add_header_above(c(" " = 1, "net decrease or increase (%)" = 3))
   
 ```
 
-It is hard to predict which values for the dynamics can be expected for the different habitat types. However, the data of the Flemish Forest Inventory might give us an idea about the forest habitat types. Table \@ref(tab:dynamicsbostypes) shows the number of paired observations and the number of plots that evolve from bad to good quality ($n_{01}$) and from good to bad quality ($n_{10}$). For habitat type 9120 the dynamics are equal to 2.2. For the other forest habitat types we van not get a reliable estimate of the dynamics as the sample size is to low or there is no net difference.
+It is hard to predict which values for the dynamics can be expected for the different habitat types. However, the data of the Flemish Forest Inventory might give us an idea about the forest habitat types. Table \@ref(tab:dynamicsbostypes) shows the number of paired observations and the number of plots that evolve from bad to good quality ($n_{01}$) and from good to bad quality ($n_{10}$). For habitat type 9120 the dynamics are equal to 2.2. For the other forest habitat types we can not get a reliable estimate of the dynamics as the sample size is too low or there is no net difference.
 
 ```{r}
 
@@ -315,7 +320,8 @@ dynamics_forest %>%
   select("habitat type" = type, "$n_{paired}$" = n_gepaard, "$n_{01}$" = n_01 , "$n_{10}$" = n_10, dynamics) %>%
   kable(caption = "Observed dynamics for forest habitat types based on the data of the Flemish Forest Inventory",
         booktabs = TRUE,
-        escape = FALSE) %>%
+        escape = FALSE, 
+        format = format_table) %>%
   kable_styling()
 ```
 
@@ -342,13 +348,13 @@ sim_data <- expand.grid(n = 20:400,
   mutate(mean_difference = d * sd_difference)
 ```
 
-#### Sample size calculation for continous variables
+#### Sample size calculation for continuous variables
 
-For the exploration of the detectable effect size as a function of the sample size, we assume continuous variables with a normal distribution. This enables a straightforward power analysis based on the paired t-test using the `pwr.t.test` of pwr package [@champely2020]. However not all habitat quality indicators are normally distributed. Yet we believe that this method will give us a general idea on the relationship between detectable effect size and sample size.
+For the exploration of the detectable effect size as a function of the sample size, we assume continuous variables with a normal distribution. This enables a straightforward power analysis based on the paired t-test using the `pwr.t.test` of the pwr package [@champely2020]. Although not all habitat quality indicators are normally distributed, we believe that this method will give us a general idea on the relationship between detectable effect size and sample size.
 
 When applying the paired t-test, the detectable effect size ($d$) equals the mean of the differences between paired observations divided by the standard deviation of the differences. Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd) show the detectable effect size as a function of the sample size.
 
-```{r fig-verschil-cont, fig.cap = "Detectable effetc size ($d$) as a function of the sample size with $\\pi = 0.8$"}
+```{r fig-verschil-cont, fig.cap = "Detectable effect size ($d$) as a function of the sample size with $\\pi = 0.8$"}
 sim_data %>%
   ggplot(aes(x = n, y = d,  )) +
   geom_line() +
@@ -364,7 +370,8 @@ sim_data %>%
   dplyr::select("Sample size" = n, "Detectable effect" = d) %>%
   unique() %>%
   kable(caption = "Detectable effect as a function of sample size and significance level with $\\pi=0.80$",
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling(full_width = FALSE) 
   
 ```
@@ -395,13 +402,14 @@ sim_data %>%
   dplyr::select("sample size" = n, everything()) %>%
   select(-alpha) %>%
   kable(caption = "Detectable mean difference as a function of sample size and standard deviation of the difference with $\\alpha=0.05$ and $\\pi=0.80$",
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling() %>%
   add_header_above(c(" " = 1, "sd difference" = 3))
   
 ```
 
-We will further explore the data of the Flemish Forest Inventory to get a rough idea on which standard deviation of differences we can expect for habitat quality indicators. 
+We will further explore the data of the Flemish Forest Inventory [@wouters_ontwerp_2008] to get a rough idea on which standard deviation of differences we can expect for habitat quality indicators. 
 
 #### Example 1: trend in proportion of favourable indicators for forest habitat types
 
@@ -460,7 +468,7 @@ verschil_aandeel_gunstig <- verschil_aandeel_gunstig %>%
   bind_rows(verschil_aandeel_gunstig_tot)
 ```
 
-Table \@ref(tab:tabmeandif) gives the mean difference of the proportion of favourable indicators between period 2 and period 1, the standard deviation of the difference and the detectable effect size ($d$). The table also show the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). The standard deviation of the differences ranges approximately between de 7% and 11%.
+Table \@ref(tab:tabmeandif) gives the mean difference of the proportion of favourable indicators between period 2 and period 1, the standard deviation of the difference and the detectable effect size ($d$). The table also shows the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). The standard deviation of the differences ranges approximately between 7% and 11%.
 
 When the estimated effect size ($d$) would correspond with the true effect size, a sample size of 80 would be sufficient to detect the effect for 9130 and 9140 with as can be seen in Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd). For the other habitat types we would need a higher sample size, but these are quite small effect sizes.    
 
@@ -468,7 +476,8 @@ When the estimated effect size ($d$) would correspond with the true effect size,
 verschil_aandeel_gunstig %>%
   dplyr::select("habitat type" = type, "sample size" = n, "mean difference" = mean_diff, "sd difference" = sd_diff, d, "p-value" = t.test_p_value, conclusion = uitspraak) %>%
   kable(caption = "Observed difference of the proportion of favourable indicators for forest habitat types",
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling() %>%
   column_spec(4, width = "2.5cm")
 
@@ -495,13 +504,14 @@ verschil_aandeel_gunstig_detecteerbaar <- sim_data %>%
 verschil_aandeel_gunstig_detecteerbaar %>%
   select( "sd difference" = sd_diff_range, "sample size" = n, d, "detectable difference" = mean_diff_range) %>%
   kable(caption = "Minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes",
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling() %>%
   collapse_rows(1)
   
 ```
 
-
+\needspace{50mm}
 
 #### Example 2: trend in indicator values for forest habitat types
 
@@ -583,14 +593,15 @@ verschil_voorwaarden <- verschil_voorwaarden %>%
 ```
 
 
-Table \@ref(tab:tabindicatoren) gives the observed effect size $d$ for the habitat quality indicators. The table also show the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). We can also compare $d$ with the values in Table \@ref(tab:powerd) to evaluate which differences can be detected for different sample sizes (assuming that the observed $d$ values are the true values). 
+Table \@ref(tab:tabindicatoren) gives the observed effect size $d$ for the habitat quality indicators. The table also shows the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). We can also compare $d$ with the values in Table \@ref(tab:powerd) to evaluate which differences can be detected for different sample sizes (assuming that the observed $d$ values are the true values). 
 
 ```{r tabindicatoren}
 verschil_voorwaarden %>%
   filter(type %in% c("9120", "91E0", "91xx")) %>%
   dplyr::select("habitat type" = type, "sample size" = n, indicator = voorwaarde_engels, "mean diff" = mean_diff, "sd diff" = sd_diff, d, "p-value" = t.test_p_value, conclusion = uitspraak) %>%
   kable(caption = "Observed effect size ($d$) for four habitat quality indicators",
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling() %>%
   column_spec(3, width = "4cm") %>%
   column_spec(c(4,5,7), width = "1cm") %>%
@@ -622,6 +633,7 @@ verschil_voorwaarden_detecteerbaar <- sim_data %>%
 
 ```
 
+\needspace{200mm}
 
 Table \@ref(tab:tabmind) shows the range of  the detectable mean difference for the habitat quality indicators that can be expected for different sample sizes. It is based on the range of observed values for the standard deviation of the indicators as shown in Table \@ref(tab:tabindicatoren).     
 
@@ -631,7 +643,8 @@ verschil_voorwaarden_detecteerbaar %>%
   arrange(voorwaarde_engels) %>%
   select(indicator = voorwaarde_engels, "sd difference" = sd_diff_range, "sample size" = n,  d, "detectable difference" = mean_diff_range) %>%
   kable(caption = "Expected range for minimum detectable difference for habitat quality indicators",
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling() %>%
   column_spec(1, width = "4cm") %>%
   column_spec(c(2,3,5), width = "2cm") %>%

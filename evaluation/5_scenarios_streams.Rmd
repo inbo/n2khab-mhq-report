@@ -1,4 +1,4 @@
-# Sample design for stream habitat types
+# Sample design for stream habitat types {#scenariostream}
 
 ## Stream habitat types included in MHQ
 
@@ -6,7 +6,7 @@ Only one stream habitat type is included in MHQ: habitat type 3260 (Water course
 
 ## Original design
 
-The sample frame of original design is based on version 1.4 of the 3260 habitat map [@leyssen2012]. A sampling unit corresponds with a river segment of 100 meter. 
+The sample frame of the original design is based on version 1.4 of the 3260 habitat map [@leyssen2014]. A sampling unit corresponds with a river segment of 100 meter. 
 
 In the original design following strata were used:
 
@@ -47,9 +47,7 @@ n_sac_update <- 80
 
 An initial sample size of 80 in Flanders ($n_{fl}$) was chosen. Next, extra sampling units were selected within the stratum 'intersects with sac and downstream of sac' until a sample size of 170 ($n_{sac}$) was reached. This is because most policy measures to improve the habitat quality are taken within SAC. Therefore we expect that differences in habitat quality will most likely occur in river segments that intersect with SAC or are situated downstream of SAC (and we want to be able to detect those differences).
 
-In a next step, the sample size is distributed over catchment area classes '< 10 km²' and '> 10 km²' proportional to the length of 3260 in each class. The reason to include these strata in the original design, is that @westra2014 expected to be able to make use of the data collected by the Flemish Environmental Agency (VMM). The VMM makes use of the same field protocol as INBO, but only measures sampling units in catchment areas larger than 10 km². By dividing the sample size over the strata '< 10 km²' and '> 10 km²' and subtracting the number of sampling units measured by VMM in the stratum '> 10 km²', we get the remaining number of sampling units per stratum that have to be measured by INBO to get a representative sample. 
-
-However, due to organisational issues VMM could not make a long term commitment for measuring sufficient sampling units in 3260 habitat. Therefore INBO decided to measure all sampling units in the monitoring scheme. As a consequence the stratum 'catchment area' is no longer useful and will be removed from the design to reduce its complexity (see further).      
+In a next step, the sample size is distributed over catchment area classes '< 10 km²' and '> 10 km²' proportional to the length of 3260 in each class. The reason to include these strata in the original design, is that @westra2014 expected to be able to make use of the data collected by the Flemish Environmental Agency (VMM). The VMM makes use of the same field protocol as INBO, but only measures sampling units in catchment areas larger than 10 km². By dividing the sample size over the strata '< 10 km²' and '> 10 km²' and subtracting the number of sampling units measured by VMM in the stratum '> 10 km²', we get the remaining number of sampling units per stratum that have to be measured by INBO to get a representative sample. However, due to organisational issues VMM could not make a long term commitment for measuring sufficient sampling units in 3260 habitat. Therefore INBO decided to measure all sampling units in the monitoring scheme. As a consequence the stratum 'catchment area' is no longer useful and will be removed from the design to reduce its complexity (see further).      
 
 
 ```{r}
@@ -113,8 +111,10 @@ Table \@ref(tab:tabszstream) shows the original sample size (per monitoring cycl
 sample_size_strata %>%
   mutate(length_3260 = round(length_3260/1000, 1),
          proportion_3260 = round(proportion_3260, 0)) %>%
-  select(sac, "catchmentarea" = catchment_area, "length 3260 (meters)" = length_3260, n = n_finite_stratum) %>%
-  kable(booktabs = TRUE) %>%
+  select(sac, "catchment area" = catchment_area, "length 3260 (meters)" = length_3260, n = n_finite_stratum) %>%
+  kable(booktabs = TRUE,
+        caption = "Original sample size for habitat 3260", 
+        format = format_table) %>%
   kable_styling(full_width = FALSE) %>%
   collapse_rows(c(1, 2))
 ```
@@ -123,7 +123,7 @@ Note: in @westra2014 an error was made when distributing the sample size over th
 
 ## Update of the sample design for 3260
 
-In the updated design we use version 1.7 of the habitat map of 3260 [@inbo2020_3] as the sample frame. It can be imported in R by using the function `read_habitatstreams()` of the n2khab package [@vanderhaeghe2022]. Another change in the sample design is that we will no longer make use of the stratum 'catchement area' as explained above. Finally, we will use the same design parameters as the terrestrial habitat types in order to get better information on trends in habitat quality:
+In the updated design we use version 1.7 of the habitat map of 3260 [@inbo2020_3] as the sample frame. It can be imported in R by using the function `read_habitatstreams()` of the n2khab package [@vanderhaeghe2022]. Another change in the sample design is that we will no longer make use of the stratum 'catchment area' as explained above. Finally, we will use the same design parameters as the terrestrial habitat types in order to get better information on trends in habitat quality:
 
 + monitoring cycle = 6 years
 + $n_{fl} = 80$
@@ -214,21 +214,23 @@ sample_size_3260_update <- sac_3260 %>%
 
 ```
 
-```{r}
+The result for the updated monitoring design can be found in Table \@ref(tab:szstreamsupdate).
+
+```{r szstreamsupdate}
 
 sample_size_3260_update %>%
   mutate(length_3260 = round(length_3260/1000, 1),
          proportion_3260 = round(proportion_3260)) %>%
   select(sac = sac_streams, "length 3260 (km)" = length_3260, n = n_finite) %>%
-  kable(booktabs = TRUE) %>%
+  kable(booktabs = TRUE,
+        caption = "Sample size for updated monitoring design", 
+        format = format_table) %>%
   kable_styling(full_width = FALSE) 
 ```
 
+In Table \@ref(tab:szstreamscompare) the sample size for both versions are compared. The updated design results in a slightly higher sample size per year.
 
-
-In the table below the sample size for both versions are compared. The updated design results in a slightly higher sample size per year.
-
-```{r}
+```{r szstreamscompare}
 
 sample_size_strata %>%
   rename(sac_streams = sac) %>%
@@ -241,9 +243,16 @@ sample_size_strata %>%
   mutate(n_year = round(n/monitoring_cycle),
          version = ifelse(version == "v2014", "original design", "updated design")) %>%
   select(version, "monitoring cycle" = monitoring_cycle, "n per cycle" = n, "n per year" = n_year) %>%
-  kable(booktabs = TRUE) %>%
+  kable(booktabs = TRUE,
+        caption = "Sample size for the monitoring cycle and per year for the original and the updated design", 
+        format = format_table) %>%
   kable_styling(full_width = FALSE) 
 ```
+
+## Sampling process
+
+As for the terrestrial and standing water habitat types, the sampling process relies on the grts-master sample for Flanders [@onkelinx2019]. The starting point of a 100 meter stream segment (the most downstream point) is used as the reference point to assign a grts-ranking to the stream segment (the population unit). The 100 meter segments were created  by selecting points on the line segments of the 1.4 version of the 3260 map every 100 meter using the function `spsample` of the sp package [@Bivand2013]. Each created point corresponds with the most downstream point of the 100 meter segment. This method was also applied to create additional population units based on the updated map of 3260 [@inbo2020_3] to update the sample frame. However, it appeared that updating the sample frame using this way could result in overlapping population units and manual correction was needed. To avoid this in the future, we will make use of the actual 100 meter line segments instead of points (representing the start of the segment). We will make use of the data source `watercourse_100mseg` [@vanderhaeghe2021]. This data source  represents all officially known watercourses of the Flemish Region as line segments of 100 m (or < 100 m, for the most upstream segment of a watercourse).
+
 
 
 

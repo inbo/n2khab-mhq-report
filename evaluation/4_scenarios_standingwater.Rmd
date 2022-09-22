@@ -1,4 +1,4 @@
-# Sample design for standing water habitat types
+# Sample design for standing water habitat types {#scenariostandwater}
 
 ## Standing water habitat types included in MHQ
 
@@ -6,7 +6,7 @@ A monitoring scheme for all standing water habit types and subtypes are included
 
 ## Original design
 
-The sampling unit for the standing water monitoring scheme is the entire water body. The original design for the standing water habitat types in @westra2014 consists of a stratified sample with a combination of following strata:
+The population unit for the standing water monitoring scheme is an entire water body. The original design for the standing water habitat types in @westra2014 consists of a stratified sample with a combination of following strata:
 
 *   area class of the water body
     +   `area <= 1 ha`
@@ -28,11 +28,11 @@ Although a monitoring cycle of 12 years was proposed in @westra2014, the monitor
 
 ## Impact of the sample frame on the sample size in the original design
 
-The number of water bodies within each stratum will have an impact on the number of selected sampling units. The main impact is that all water bodies in the area classes `5 ha < area < 50 ha` and `area >= 50 ha` are selected in the original design. Furthermore, the number of polygons also has an impact on the finite population correction.
+The number of water bodies within each stratum will have an impact on the number of selected sampling units. The main impact is that all water bodies in the area classes `5 ha < area < 50 ha` and `area >= 50 ha` are selected in the original design. Furthermore, the number of population units also has an impact on the finite population correction.
 
 Therefore, we want to compare the sampling frame that was originally used for designing the monitoring schemes with the latest available sampling frame.
 
-The original sample frame consists of the polygons with standing water habitat types in the 2014 version of the Flemish habitat map.
+The original sample frame consists of the polygons with standing water habitat types in the 2014 version of the Natura 2000 habitat map.
 
 ```{r}
 
@@ -76,7 +76,7 @@ sac_sf <- read_admin_areas(dsn = "sac") %>%
 Since 2014 new data sources became available:
 
 -   the map of the water surfaces in Flanders [@inbo2020_2]
--   updated information on the presence of aquatic habitat types, made available through the 2020 version of the Flemish habitat map [@inbo2020]
+-   updated information on the presence of aquatic habitat types, made available through the 2020 version of the Natura 2000 habitat map [@inbo2020]
 
 Both data sources are combined in the map of standing water habitat types [@westra2021_2], which is used as the current sample frame. It can be imported in R by using the function `read_watersurfaces_hab()` of the n2khab package [@vanderhaeghe2022].
 
@@ -186,7 +186,8 @@ samplesize_total %>%
   select(-scenario) %>%
   kable(caption = "Total sample size per area class for standing water habitat types based on the original design and the total number of sampling units for both the original sample frame (habitatmap\\_2014) and the current sample frame (watersurfaces\\_hab\\_2021)",
         escape = FALSE,
-        booktabs = TRUE) %>%
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling()
 ```
 
@@ -211,18 +212,19 @@ samplesize_overview %>%
   rename("version sample frame" = version) %>%
   kable(caption = "Total sample size and the total number of sampling units per standing water habitat type and per area class based on the original design for both the original sample frame (habitatmap\\_2014) and the current sample frame (watersurfaces\\_hab\\_2021)",
         booktabs = TRUE,
-        escape = FALSE) %>%
+        escape = FALSE, 
+        format = format_table) %>%
   kable_styling(latex_options = "scale_down") %>%
   column_spec(c(3,4,5,6), width = "2cm") %>%
   collapse_rows(c(1,2))
   
 ```
 
-The total sample size almost doubles. Since the available resources for field work has not increased, the sample size that results from the current sample frame is not feasible. Therefore we will explore two alternative scenario's.
+The total sample size almost doubles. Since the available resources for field work has not increased, the sample size that results from the current sample frame is not feasible. Therefore we will explore two alternative scenarios.
 
 ## Alternative scenarios
 
-We propose the following alternative scenario's:
+We propose the following alternative scenarios:
 
 + draw a sample for all types with more than 30 water surfaces in the area classes `area <= 1 ha`, `1 ha < area <= 5 ha` and `5 ha < area <= 50 ha`
   + select an initial sample size of 80 for Flanders
@@ -385,9 +387,10 @@ samplesize_alt_total %>%
   filter(!(version == "watersurfaces_hab_2021" & scenario == "original")) %>%
   select(-version) %>%
   rename("$n_{fl}$" = n_fl, "$n_{sac}$" = "n_sac", "$n_{subtype}$" = "n_subtype" ) %>%
-  kable(caption = "Alternative sample size scenarios compared the to original design: total number of sampling units and total number of watersurfaces",
+  kable(caption = "Alternative sample size scenarios compared the to original design: total number of sampling units and total number of water surfaces",
         booktabs = TRUE,
-        escape = FALSE) %>%
+        escape = FALSE, 
+        format = format_table) %>%
   kable_styling() %>%
   column_spec(c(4,5,6,7), width = "1.8cm")
 ```
@@ -407,8 +410,9 @@ samplesize_alt_overview %>%
   arrange(type, scenario) %>%
   select(-version, -n_fl, -n_sac, -n_subtype) %>%
   mutate(sac = ifelse(sac, "inside", "outside")) %>%
-  kable(caption = "Alternative sample size scenarios compared the to original design: number of sampling units per type and total number of watersurfaces per type",
-        booktabs = TRUE) %>%
+  kable(caption = "Alternative sample size scenarios compared the to original design: number of sampling units per type and total number of water surfaces per type",
+        booktabs = TRUE, 
+        format = format_table) %>%
   kable_styling() %>%
   column_spec(c(4,5,6,7), width = "1.8cm") %>%
   collapse_rows(c(1,2), target = 1)
@@ -419,7 +423,7 @@ Sample sizes of the alternative scenarios are slightly higher compared to the or
 
 We choose alternative 2 (no extra sampling units within sac) as most of the water bodies with habitat are located within SAC, and therefore a sample on the scale of Flanders already contains sufficient sampling units within SAC.
 
-In Table \@ref(tab:tab-wsyear) we compare the number of water bodies that have to be measured per year in the original design and the updated design. Since measuring large water bodies require more effort, we show the numbers per area class. We see that in the updated design a slightly higher number of large water bodies have to be measured.
+In Table \@ref(tab:tab-wsyear) we compare the number of water bodies that have to be measured per year in the original design and the updated design. Since measuring large water bodies requires more effort, we show the numbers per area class. We see that in the updated design a slightly higher number of large water bodies have to be measured.
 
 ```{r tab-wsyear, eval =TRUE}
 
@@ -444,8 +448,24 @@ total %>%
   select(-n) %>%
   spread(key = area_class, value = n_year) %>%
   kable(booktabs = TRUE,
-        caption = "Number of sampling unit per year for the different area classes in both the original design and the updated design") %>%
+        caption = "Number of sampling unit per year for the different area classes in both the original design and the updated design", 
+        format = format_table) %>%
   kable_styling()
            
   
 ```
+The first monitoring cycle will be finished in 2022 and the new monitoring design will be implemented in the second monitoring cycle starting from 2023. 
+
+## Sampling process
+
+As for the terrestrial habitat types, the sampling process relies on the grts-master sample for Flanders [@onkelinx2019]. To assign a grts-ranking to a water body (the population unit) we select a reference point in the water body using the function `st_point_on_surface` of the sf package [@Pebesma2018]. Next, the water body gets the grts-ranking of the grts-master grid cell in which the reference point is located. Once a grts-ranking is assigned to all water bodies, a sample can be drawn in a similar way as the terrestrial habitat types. 
+
+
+
+
+
+
+
+
+
+

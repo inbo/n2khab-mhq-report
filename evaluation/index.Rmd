@@ -1,0 +1,171 @@
+---
+# generic options. See ?INBOmd::pdf_report() for full list and more details.
+title: Monitoring scheme for biotic habitat quality of Natura 2000 habitat types in Flanders, Belgium
+subtitle: Revision of the monitoring design
+author: 
+  - firstname: Toon
+    name: Westra
+    email: "Toon.Westra@inbo.be"
+    orcid: 0000-0002-1825-0097
+  - firstname: Patrick 
+    name: Oosterlynck
+    #email: "voornaam2.achternaam2@inbo.be"
+    orcid: 0000-0002-5712-0770
+  - firstname: Govaere 
+    name: Leen
+    #email: "voornaam2.achternaam2@inbo.be"
+    #orcid: 0000-0002-1825-0097
+  - firstname: An 
+    name: Leyssen
+    #email: "voornaam2.achternaam2@inbo.be"
+    orcid: 0000-0003-3537-286X
+  - firstname: Luc 
+    name: Denys
+    #email: "voornaam2.achternaam2@inbo.be"
+    orcid: 0000-0002-1841-6579
+  - firstname: Jo 
+    name: Packet
+    #email: "voornaam2.achternaam2@inbo.be"
+    orcid: 0000-0001-5590-323X
+  - firstname: Kevin 
+    name: Schoors
+    #email: "voornaam2.achternaam2@inbo.be"
+    orcid: 0000-0002-4756-4247
+  - firstname: Floris 
+    name: Vanderhaeghe
+    #email: "voornaam2.achternaam2@inbo.be"
+    orcid: 0000-0002-6378-6229
+  - firstname: Jeroen 
+    name: Vanden Borre
+    #email: "voornaam2.achternaam2@inbo.be"
+    orcid: 0000-0002-0153-7243
+style: Flanders
+lang: en
+
+# report specific options. See ?INBOmd::pdf_report() for full list and more details.
+shortauthor: Westra T., Oosterlynck P., Govaere L., Leyssen A., Denys L., Packet J., Schoors K. and Vanderhaeghe F.
+corresponding: Toon.Westra@inbo.be
+reviewer:
+  - firstnaam: Hans
+    name: Van Calster
+    #email: "firstname.lastname@inbo.be"
+    orcid: 0000-0001-8595-8426
+year: 2022
+cover_photo:
+cover_description: foto
+cover:
+doi: 111
+reportnr: 111
+# ordernr:
+depotnr: 111
+
+# pdf report specific options. See ?INBOmd::pdf_report() for full list and more details.
+embargo:
+print:
+  copies: 0
+  motivation:
+  pages:
+
+bibliography: references.bib
+link-citations: TRUE
+site: bookdown::bookdown_site
+
+always_allow_html: true
+
+output:
+  INBOmd::gitbook: default
+  INBOmd::pdf_report: default
+  INBOmd::epub_book: default
+  bookdown::word_document2:
+    toc: true
+  bookdown::html_document2:
+    toc: true
+    toc_float:
+      collapsed: FALSE
+      smooth_scroll: FALSE
+    number_sections: TRUE
+  # Don't run the format below.
+  # Only required for RStudio to recognise the project as a bookdown project.
+  # Hence don't use "Build all formats".
+  bookdown::dontrun: default
+---
+
+
+# Acknowledgement {-}
+
+We would like to thank Hans Van Calster for reviewing this report. We would also like to thank all the field workers that have contributed to the data collection for the habitat quality monitoring scheme: Vincent Smeekens, Kevin Scheers, Jonathan Verborgt, Nils Bouillard, Ivy Jansen, Wim Jambon, Jan Meulemans, Raf Schrey, Luc Schrey, Peter Sannen,
+Alex Vandebon, Geert Fierens, Anke Balleux, Patrick Deckers, Bart Roelandt, Wouter Van Gompel, Ward Vercruysse, Sam Provoost, Indra Jacobs, Remar Erens, Robin Guelinckx, Frederic Van Lierop and Bart Van De Voorde.
+
+# Abstract {-}
+
+Abstract
+
+\bdutch
+
+# Samenvatting {-}
+
+Samenvatting
+
+\edutch
+
+# Introduction
+
+Every six years member states of the European Union have to report on the conservation status of species and habitat types listed on the Habitat and Bird Directive. The Nature and Forest Research Institute (INBO) is responsible for the monitoring of these species and habitat types in Flanders, the northern part of Belgium. 
+
+INBO implemented a monitoring programme for habitat types that consists of following parts:
+
++ a field based habitat mapping campaign to assess the distribution, area and range of all habitat types and subtypes in Flanders
+
++ a monitoring scheme to assess the biotic habitat quality for most habitat types and subtypes
+
+An additional part for monitoring the natural environment is currently under development. It aims at assessing the abiotic conditions of habitat types to evaluate pressures and threats. 
+
+In this report, we will focus on the monitoring scheme for biotic habitat quality (MHQ) and we will evaluate the design of this scheme as described in @westra2014. We will first give a short summary of the [information needs](#information) and give an overview of some of the [characteristics of MHQ](#overview). Next we will [evaluate the sample size](#samplesize). The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@westra2014]. In this report we will also perform sample size calculations for the habitat quality trend, as trend information plays a more important role in the habitat reporting. Finally, we will evaluate some alternative scenarios for the monitoring design and document the modifications of the monitoring design that will be implemented. We do this separately for [terrestrial habitat types](#scenarioterr), [standing water habitat types](#scenariostandwater) and [stream habitat types](#scenariostream).  
+
+```{r setup, include = FALSE}
+library(knitr)
+opts_chunk$set(
+  echo = FALSE,
+  eval = TRUE,
+  cache = FALSE,
+  warning = FALSE,
+  error = FALSE,
+  message = TRUE
+)
+library(tidyverse)
+library(INBOtheme)
+library(n2khab)
+library(pwr)
+library(kableExtra)
+library(TrialSize)
+library(sf)
+library(units)
+library(git2rdata)
+
+options(knitr.kable.NA = '')
+options(dplyr.summarise.inform = FALSE)
+
+if (interactive()) {
+  theme_set(theme_inbo(base_size = 10))
+} else {
+  switch(
+    opts_knit$get("rmarkdown.pandoc.to"),
+    html = {
+      opts_chunk$set(dev = "png", dpi = 72)
+      theme_set(theme_inbo(base_size = 12))
+    },
+    latex = {
+      opts_chunk$set(dev = "cairo_pdf", dpi = 300)
+      theme_set(theme_inbo(base_size = 9))
+      update_geom_defaults("point", list(size = 1.5))
+    },
+    epub3 = {
+      opts_chunk$set(dev = "png", dpi = 300)
+      theme_set(theme_inbo(base_size = 12))
+    }
+  )
+}
+
+doc.type <- knitr::opts_knit$get('rmarkdown.pandoc.to')
+format_table <- ifelse(doc.type == "docx", "simple", doc.type)
+```

@@ -1,28 +1,25 @@
 
-# Sample design for terrestrial habitat types
+# Sample design for terrestrial habitat types {#scenarioterr}
 
 
 ## Habitat types and subtypes included in MHQ 
 
-As mentioned in @westra2014, MHQ does not contain a monitoring scheme for all terrestrial habitat types or habitat subtypes that occur in Flanders. For several habitat types a habitat quality monitoring scheme is not considered as a feasible or appropriate approach:
+As mentioned in @westra2014, MHQ does not contain a monitoring scheme for all terrestrial habitat types or habitat subtypes that occur in Flanders. For several habitat types a habitat quality monitoring scheme is not considered as a feasible or appropriate approach. This is the case:
 
 + very rare terrestrial habitat types (defined as habitat types with an area lower than 10 ha or occurring on less than 15 locations): a monitoring scheme would result in a very high density of plots which might impact the vulnerable vegetation;
 + estuaries (type 1130): the habitat quality has to be evaluated on a landscape scale;
 + mudflats (type 1140): this habitat type is not included in @oosterlynck2020;
 + very dynamic habitat types (type 1130, 2110 and 7150): a basic habitat quality assessment combined with habitat area mapping is considered a more appropriate approach;
 + habitat type 6430: a very patchy habitat type for which an accurate sample frame is not available;
-+ habitat type 9110: habitat type only occurring in the continental biogeographical region of Flanders and it covering only a small area compared to the total area of 9110 in Belgium. Therefore a separate estimate for Flanders is not considered very relevant.
++ habitat type 9110: habitat type only occurring in the continental biogeographical region of Flanders and covering only a small area compared to the total area of 9110 in Belgium. Therefore a separate estimate for Flanders is not considered very relevant.
 
-An oversampling is considered for all habitat subtypes except for the very rare terrestrial subtypes (defined as habitat subtypes with an area lower than 10 ha or occurring on less than 15 locations). As for dynamic habitat types, we intend to perform a basic habitat quality assessment for very rare terrestrial habitat types and subtypes is combination with the habitat area mapping.
+An oversampling is considered for all habitat subtypes except for the very rare terrestrial subtypes (defined as habitat subtypes with an area lower than 10 ha or occurring on less than 15 locations).  For very rare terrestrial habitat types and subtypes we intend to perform a basic habitat quality assessment in combination with the habitat area mapping.
 
 Appendix \@ref(annex2) shows for which habitat types a monitoring scheme was developed and for which subtypes oversampling is considered. The area and the number of locations (to determine the very rare habitat types and subtypes) is derived from the standardized map of habitat types in Flanders [@westra2021]. This data source is a processed version of the Natura 2000 habitat map [@inbo2020]. The standardized map is processed in a way it can be easily imported and analysed in R. It can be imported in R by using the function `read_habitatmap_stdized()` of the n2khab package [@vanderhaeghe2022].
 
 In the original design of @westra2014 a monitoring scheme was also planned for habitat type 5130 and 6430. However these monitoring schemes were not implemented. Habitat type 5130 is considered a very rare habitat type (see Appendix \@ref(annex2)) and for habitat type 6430 a monitoring scheme is not feasible as mentioned above.    
 
 check 2190_mp
-
-
-
 
 ```{r}
 habmap_terr <- read_habitatmap_terr()
@@ -90,17 +87,16 @@ types_area_strata <- habmap_types %>%
 
 ```
 
+## scenarios for the sample design
 
-## Scenario's for the sample design {#scenarioterr}
-
-We will calculate the total number of sampling units that have to be measured per year for different scenario's. The scenarios are characterised by following parameters:
+We will calculate the total number of sampling units that have to be measured per year for different scenarios. The scenarios are characterised by following parameters:
 
 + monitoring cycle: the number of years in which all sampling units have to measured
 + $n_{fl}$: the sample size per habitat type for the whole of Flanders
 + $n_{sac}$: the sample size per habitat type within the Special Areas of Conservation (SAC)
 + $n_{subtype}$: the (minimum) sample size per habitat subtype for the whole of Flanders 
 
-The method for the calculation of the total sample size per habitat type is explained in @westra2014. In a first step a finite population corrections is applied on $n_{fl}$, $n_{sac}$ and $n_{subtype}$. This is because the calculated sample sizes (chapter ) are valid for infinite populations. Yet, most habitat types or subtypes cover a relatively small area and can therefore be considered as a finite population. The finite sample size $n_{finite}$ is calculated as follows:
+The method for the calculation of the total sample size per habitat type is explained in @westra2014. In a first step a finite population corrections is applied on $n_{fl}$, $n_{sac}$ and $n_{subtype}$. This is because the calculated sample sizes in section \@ref(samplesize) are valid for infinite populations. Yet, most habitat types or subtypes cover a relatively small area and can therefore be considered as a finite population. The finite sample size $n_{finite}$ is calculated as follows:
 
 $$n_{finite}=\frac{Nn_{infinite}}{n_{infinite} + (N-1)}$$
 with: 
@@ -111,7 +107,6 @@ For the terrestrial habitat types a population unit corresponds with a 32m x 32m
 
 
 ```{r}
-
 
 calc_finitsamplesize_terrhab <- function(n_type_flanders = 80, n_type_sac = 170, n_subtype_flanders = 80, types_area_strata = types_area_strata) {
   
@@ -281,7 +276,7 @@ meetnet_selection <- samplesize_original_detailed %>%
 
 ```
 
-Table \@ref(tab:tabscenario) compares the original design of @westra2014 with three alternative scenario's for open terrestrial habitats. For forest habitat types no alternative scenario's are considered since the monitoring scheme was designed to make it compatible with the Flemish Forest Inventory. The table shows the total sample size for the monitoring cycle and the total sample size per year after applying the finite population correction. The table also gives information on the total number of sampling units initially selected in Flanders ($tot_{fl}$) and the total number of extra sampling units selected in the SAC ($extra_{sac}$) and in the habitat subtypes ($extra_{subtype}$).       
+Table \@ref(tab:tabscenario) compares the original design of @westra2014 with three alternative scenarios for open terrestrial habitats. For forest habitat types no alternative scenarios are considered since the monitoring scheme was designed to make it compatible with the Flemish Forest Inventory. The table shows the total sample size for the monitoring cycle and the total sample size per year after applying the finite population correction. The table also gives information on the total number of sampling units initially selected in Flanders ($tot_{fl}$) and the total number of extra sampling units selected in the SAC ($extra_{sac}$) and in the habitat subtypes ($extra_{subtype}$).       
 
 ```{r tabscenario}
 
@@ -316,7 +311,8 @@ scenarios_total %>%
   kable(booktabs = TRUE,
         align = "lccccccccc",
         escape = FALSE,
-        caption = "Comparison between original design and three alternative scenario's. The selected scenario's are shown in bold.") %>%
+        caption = "Comparison between original design and three alternative scenarios. The selected scenarios are shown in bold.", 
+        format = format_table) %>%
   kable_styling(latex_options = "scale_down") %>%
   pack_rows("Open habitat type", 1, 5) %>%
   pack_rows("Forest type", 6, 6) %>%
@@ -342,29 +338,35 @@ samplesize_scenario3_detailed <- bind_rows(samplesize_scenario3_nonforest$sample
 
 By comparing the costs (the number of sampling units that have to be measured per year) and the benefits (the minimal differences for status and trend that can be detected), we decide to implement alternative 3 for the open habitat types. It allows the estimation of short-term trends (12 year) in habitat quality based on paired observations, as the monitoring cycle is lowered to 6 years. It also allows the estimation of the status of habitat quality on the scale of Flanders every six years with (approximately) the same precision as the original design, as the sample size per habitat type is kept to 80. The cost of alternative 3 is only slightly higher (11 extra sampling units per year) compared to the original design.    
 
-Annex \@ref(annex3) gives an overview of the sample size per habitat type and subtype.
+Annex \@ref(annex3) gives an overview of the sample size per habitat type and subtype for the selected scenario.
+
+We will not wait until the first 12 year monitoring cycle is finished to start with the new monitoring design. The new design will be implemented once the required sample size in Annex \@ref(annex3) is reached. In 2022 we have already started with the implementation of the second monitoring cycle for grassland, heath and marsh habitat types. The dune habitat types will follow in 2023. 
 
 ## Sampling process
 
-As in @westra2014, the sampling process relies on the so called grts-master sample for Flanders [@onkelinx2019]. This is spatially balanced sample for the whole of Flanders based on the Generalized Random-Tessellation Stratified (GRTS) method [@steven2014]. The sample consists of a grid of 32 meter x 32 meter cells, each having a unique ranking number. It can be imported in R using the function `read_GRTSmh` from the n2khab package [@vanderhaeghe2022]
+As in @westra2014, the sampling process relies on the so-called grts-master sample for Flanders [@onkelinx2019]. This is a spatially balanced sample for the whole of Flanders based on the Generalized Random-Tessellation Stratified (GRTS) method [@stevens2004]. The sample consists of a grid of 32 meter x 32 meter cells, each having a unique ranking number. It can be imported in R using the function `read_GRTSmh` from the n2khab package [@vanderhaeghe2022]
 A sample with sample size $n$ for a certain habitat type is selected as follows: (1) select all grid cells of the master sample that overlap with the sampling frame of the target habitat type and (2) select the $n$ grid cells with the lowest ranking number. 
 
-An important thing to take into account in the sampling process is that the sample frame (based on the Habitat map) often consists of polygons that are only partially covered by the target habitat type. In the Habitat map [@inbo2020] the variable $phab$ gives an indication of the proportion of a polygon covered by a habitat type. This means that a selected sampling unit is often not located in the target habitat type. 
+An important thing to take into account in the sampling process is that the sample frame (based on the Natura 2000 habitat map [@inbo2020]) often consists of polygons that are only partially covered by the target habitat type. This means that selected sampling units are often not located in the target habitat type. In the Natura 2000 habitat map [@inbo2020] the variable $phab$ gives the proportion of a polygon covered by a habitat type. 
 
 In the original design by @westra2014 this was tackled by first estimating the average detection rate for each habitat type, within each stratum:
 
 $$\text{detection rate} = \frac{\sum{phab*area_{polygon}}}{\sum{area_{polygon}}}$$
-Next, based on the detection rate, we selected the expected number of sampling units that had to be visited to reach the required sample size for the target habitat type (within each stratum). However, it appeared that for some habitat types the detection rates were lower than estimated from the Habitat map and below 50 %. Therefore, to increase the efficiency of the field work, we created a protocol to randomly select an alternative sampling unit in the field to replace an initially selected sampling unit that did not contain the target habitat type. This protocol was only applied when the detection rate was very low.
+Next, based on the detection rate, we selected the expected number of sampling units that have to be visited to reach the required sample size for the target habitat type (within each stratum). However, it appeared that for some habitat types the detection rates were lower than estimated from the Habitat map and below 50 %. To increase the efficiency of the field work, we created a protocol to randomly select an alternative sampling unit in the field, in order to replace an initially selected sampling unit that did not contain the target habitat type. This protocol was only applied when the detection rate was very low.
 
-The method above increases the efficiency of the field work, but can also potentially result in biased estimates of habitat quality. The replacement method causes a higher selection probability for sampling units in polygons with a low $phab$. Biased estimates can be avoided by using proper weights in the data analysis. However, this makes analysis more complex.
+The replacement method described above increases the efficiency of the field work, but can also potentially result in biased estimates of habitat quality. The method causes a higher selection probability for sampling units in polygons with a low $phab$. Biased estimates can be avoided by using proper weights in the data analysis. However, this makes analysis more complex.
 
-In the updated design we introduce an alternative method that results in an equal probability sample. This method consists of an extra step in which a sampling unit for the target habitat type is selected with a probability equal to $phab$. For example, sampling units that are located in a Habitat map polygon that is covered by a habitat type for 30% ($phab=30$), all have a selection probability of 30%. In an next step, sampling units (that were selected in the previous step) are selected based on the grts-ranking until the required sample size is obtained. In this method, when a sampling unit does not contain the target habitat type, it is always replaced with another sampling unit (that does contain the habitat type) within the same habitat polygon. Therefore, no additional sampling units have to be selected as in the original design, making field work more efficient. Replacing a sampling unit is also based on the grts-ranking: the sampling unit, that contains the target habitat type, with the lowest grts-ranking within the same habitat polygon is selected.
+In the updated design we introduce an alternative method that results in an equal probability sample. This method consists of an extra step in which population units of the target habitat type are selected with a probability equal to $phab$. For example, population units that are located in a Habitat map polygon that is covered by a habitat type for 30% ($phab=30$), all have a selection probability of 30%. In the next step, sampling units are selected (from the selected population units in the previous step) based on the grts-ranking until the required sample size is obtained. In this method, when a sampling unit does not contain the target habitat type, it is always replaced with another sampling unit (that does contain the habitat type) within the same habitat polygon. Therefore, no additional sampling units have to be selected as in the original design, making field work more efficient. Replacing a sampling unit is also based on the grts-ranking: the sampling unit that contains the target habitat type, with the lowest grts-ranking within the same habitat polygon is selected.
 
-When habitat polygons are ver large, the replacement method gets very time consuming as sampling units might lay far apart. Therefore we limit the search area to a window of 7 X 7 grid cells around the initial sampling unit.
+When habitat polygons are very large, the replacement method gets very time consuming as sampling units might lay far apart. Therefore we limit the search area to a window of 7 X 7 grid cells around the initial sampling unit.
 
-To make the sampling process reproducible we make use of the data source `raster_runif` [@westra2021_3]. This is a grid with the same dimensions and resolution as the grts-master sample for Flanders in which every raster cell has a random value between 0 and 1 according to the uniform distribution. A sampling unit is selected when the `raster_runif` value is lower than the $phab$ value. 
+To make the sampling process reproducible we make use of the data source `raster_runif` [@westra2021_3]. This is a grid with the same dimensions and resolution as the grts-master sample for Flanders in which every raster cell has a random value between 0 and 1 according to the uniform distribution. A population unit is selected when the `raster_runif` value is lower than the $phab$ value. 
 
-In the original sampling process the extra selection step was not used. So when we select a new sample based on the new sampling process, many of the original sampling units will no longer be selected. To avoid this and to assure that a maximum number of sampling units are reselected (to get a maximum number of paired observations), we will assign a probability of 1 (independent of the $phab$ value) to all sampling units that have been measured in the first monitoring cycle. In the second step we will use the grts-ranking to select the sampling units until the required sample size is reached. In this second step sampling units that were measured in the first monitoring cycle might not get reselected, as the sample frame has changed.        
+In the original sampling process the extra selection step was not used. So when we select a new sample based on the new sampling process, many of the original sampling units will no longer be selected. To avoid this and to assure that a maximum number of sampling units are reselected (to get a maximum number of paired observations), we will assign a probability of 1 (independent of the $phab$ value) to all sampling units that have been measured in the first monitoring cycle. 
+
+In the second step we will use the grts-ranking to select the sampling units until the required sample size is reached. In this second step sampling units that were measured in the first monitoring cycle might not get reselected. This happens when the area of a habitat type increases resulting in new population units. Some of these new population units will have a lower grts-ranking than previously selected sampling units and will therefore be included in the sample replacing sampling units with a higher grts-ranking.
+
+
 
 
 
