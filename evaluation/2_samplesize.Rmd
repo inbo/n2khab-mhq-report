@@ -1,17 +1,17 @@
 
 # Sample size evaluation {#samplesize}
 
-Sample size calculations provide an insight in the relationship between sample size and the minimal detectable effect size for a given significance level $\alpha$ and power $\pi$. $\alpha$ is the probability of a type I error, i.e. the probability of concluding that there is no effect based on a the sample, when in reality there is an effect. $\pi$ is the probability to detect an effect based on a sample, when the effect also exists in reality.
+Sample size calculations provide an insight in the relationship between sample size and the minimal detectable effect size for a given significance level $\alpha$ and power $\pi$. $\alpha$ is the probability of a type I error, i.e. the probability of concluding that there is an effect based on a sample, when in reality there is no effect in the population. $\pi$ is the probability to detect an effect based on a sample, when the effect also exists in reality.
 
-The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@westra2014]. We will first reproduce the sample size calculations in @westra2014. Next we will also perform a sample size calculation for the trend in habitat quality.
+The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@westra2014]. We will first reproduce the sample size calculations by @westra2014. Next we will also perform a sample size calculation for the trend in habitat quality.
 
 As in @westra2014, we will choose a power $\pi$ of 0.80 and a significance level $\alpha$ of 0.05.    
 
 ## Habitat quality status
 
-### Minimal detectable difference between the proportion of habitat with bad quality and the 25%-threshold
+### Minimal detectable difference between the proportion of habitat in not-good condition and the 25%-threshold
 
-The quality of a habitat type is unfavourable (on a regional scale) when more than 25% of the habitat area has a bad quality (on a local scale). Here we want to determine the minimal detectable difference from the 25%-threshold.
+The quality of a habitat type is unfavourable (on a regional scale) when more than 25% of the habitat area is in a not-good condition. Here we want to determine the minimal detectable difference from the 25%-threshold.
 
 For a straightforward sample size calculation for the minimal detectable difference from a threshold value, we can apply the *proportion test* [@cohen1988] using the function `pwr.p.test` of the pwr package [@champely2020].
 
@@ -51,7 +51,7 @@ for (i in 1:nrow(sim_data)) {
 
 ```
 
-Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil) show the results of the sample size calculations. The results can be interpreted as follows. When in reality less than 16.3 % of the habitat has a bad quality, we will be able to conclude that the habitat proportion with a bad quality is significantly lower than the 25%-threshold when we have sample size of 170 (with $\pi = 0.80$ and $\alpha = 0.05$). Hence, the minimal detectable difference is 8,7 %. Similarly, when in reality more than 34,8 % of the habitat has a bad condition, we will be able to conclude that the habitat proportion with a bad quality is significantly higher than the 25%-threshold. When the habitat proportion with a bad quality is between 16,3 % and 34,8 %, a sample size of 170 will not allow us to detect a difference from the 25%-threshold.
+Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil) show the results of the sample size calculations. The results can be interpreted as follows. When in reality less than 16.3 % of the habitat has a not-good quality, we will be able to conclude that the habitat proportion with a not-good quality is significantly lower than the 25%-threshold when we have sample size of 170 (with $\pi = 0.80$ and $\alpha = 0.05$). Hence, the minimal detectable difference is 8,7 %. Similarly, when in reality more than 34,8 % of the habitat has a not-good condition, we will be able to conclude that the habitat proportion with a not-good quality is significantly higher than the 25%-threshold. When the habitat proportion with a not-good quality is between 16,3 % and 34,8 %, a sample size of 170 will not allow us to detect a difference from the 25%-threshold with a probability of at least 0.80 ($\pi$) and a type I error of at most 0.05 ($\alpha$).
 
 ```{r figpowerverschil, fig.cap = "Relationship between sample size and minimal detectable difference"}
 
@@ -59,7 +59,7 @@ ggplot() +
   geom_line(data = sim_data, aes(x = n_sim, y = p1_low)) +
   geom_line(data = sim_data, aes(x = n_sim, y = p1_high)) +
   geom_hline(yintercept = 0.25, linetype = 1, size = 0.5, alpha = 0.5) +
-  labs(x = "Sample size", y = "Habitat propotion with bad quality") +
+  labs(x = "Sample size", y = "Habitat propotion in not-good condition") +
   scale_y_continuous(labels = scales::percent) +
   scale_linetype_manual(values = c(2,3))
 
@@ -116,11 +116,11 @@ status_types <- bind_rows(
 
 ```
 
-In Figure \@ref(fig:figrapportage) we show the estimated habitat proportions with bad quality as reported in 2019. This reporting was based on the plots that were measured in the period 2014 - 2018. This means that only a subset of the total sample size was measured at that time, as the total monitoring cycle was 12 years. Only for the more common forest habitat types we already reached the total sample size, as we could make use of the measurements of the Flemish Forest Inventory.
+In Figure \@ref(fig:figrapportage) we show the estimated habitat proportions in not-good condition as reported in 2019, the 95% - confidence interval of the estimate and the sample size on which the estimate is based (text above the condidence interval). The 2019 report is based on the plots that were measured in the period 2014 - 2018. This means that only a subset of the total sample size was measured at that time, as the total monitoring cycle was 12 years. This subset is still representative for the sample as a whole due to the nature of the sampling design. Only for the more common forest habitat types we already reached the total sample size, as we could make use of the measurements of the Flemish Forest Inventory.
 
-The habitat types are represented by the habitat code and the colour corresponds with the habitat quality evaluation: favourable, unknown or unfavourable. For many habitat types we can already conclude that the quality is unfavourable, even with a sample size much smaller than 170. This is because in many cases the habitat proportion with bad quality is much higher than the 25%-threshold and such large differences can be detected with sufficient power based on smaller sample sizes, as can be seen in Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil). Only for two habitat types (2160 and 2190) we need a higher precision in order to conclude if the proportion with bad quality is higher or lower than the 25%-threshold.
+The habitat types are represented by the habitat code and the colour corresponds with the habitat quality evaluation: favourable, unknown or unfavourable. For many habitat types we can already conclude that the quality is unfavourable, even with a sample size much smaller than 170. This is because in many cases the habitat proportion with not-good quality is much higher than the 25%-threshold and such large differences can be detected with sufficient power based on smaller sample sizes, as can be seen in Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil). Only for two habitat types (2160 and 2190) we need a higher precision in order to conclude if the proportion with not-good quality is higher or lower than the 25%-threshold.
 
-In the coming years, it will be more relevant for nature policy to get information on the trend of habitat quality (does the quality of the unfavourable habitat types improve?) than to invest in a higher precision of the status of habitat quality. In other words, it will probably be better to shorten the original monitoring cycle and to start revisiting the measured plots sooner as planned. This requires an adjustment of the monitoring design. Therefore we will also perform sample size calculations for trends in habitat quality. This way we can find a good balance between the precision of the habitat quality status and the precision of the trend. 
+In the coming years, it will be more relevant for nature policy to have information on the trend of habitat quality (does the quality of the unfavourable habitat types improve?) than to invest in a higher precision of the status of habitat quality. In other words, it will probably be better to shorten the original monitoring cycle and to start revisiting the measured plots sooner than originally planned. This requires an adjustment of the monitoring design. Therefore we will also perform sample size calculations for trends in habitat quality. This way we can find a good balance between the precision of the habitat quality status and the precision of the trend. 
 
 ```{r figrapportage, fig.height= 6, fig.width= 6, fig.cap = "Results of the habitat reporting"}
 
@@ -128,17 +128,24 @@ sim_data0.8 <- sim_data %>%
   filter(power == 0.8) %>%
   filter(n_sim <= 300)
 
-ggplot(data = status_types, aes(x = n, y = prop_slecht, ymin = prop_slecht_lci, ymax = prop_slecht_uci, colour = uitspraak)) +
+status_types_order <- (status_types %>%
+  arrange(n))$type
+
+status_types <- status_types %>%
+  mutate(type = factor(type, levels = status_types_order))
+
+ggplot(data = status_types, aes(x = type, y = prop_slecht, ymin = prop_slecht_lci, ymax = prop_slecht_uci, colour = uitspraak)) +
   # geom_line(data = sim_data0.8, aes(x = n_sim, y = p1_low, linetype = factor(alpha))) +
   # geom_line(data = sim_data0.8, aes(x = n_sim, y = p1_high, linetype = factor(alpha))) +
   geom_hline(yintercept = 0.25, linetype = 1, size = 1, alpha = 0.5) +
-  geom_point( alpha = 0.8, size = 3) +
-  #geom_errorbar() +
-  geom_text(data = status_types, aes(x = n, y = prop_slecht, label = type), alpha = 1, size = 2, hjust = 1.4, angle = 45, colour = "black") +
-  labs(x = "Sample size", y = "Estimated habitat proportion with bad quality", colour = "Conclusion") +
+  geom_point( alpha = 0.8, size = 2) +
+  geom_errorbar(size = 1) +
+  geom_text(data = status_types, aes(x = type, y = prop_slecht_lci, label = n), alpha = 1, size = 3, vjust = -1.1, colour = "black") +
+  labs(x = "Habitat type", y = "Estimated habitat proportion in not-good condition", colour = "Conclusion") +
   scale_y_continuous(labels = scales::percent) +
   scale_linetype_manual(values = c(2,3)) +
-  scale_colour_manual(values = c("Favourable" = inbo_groen, "Unfavourable" = inbo_rood, "Unknown" = inbo_grijs)) 
+  scale_colour_manual(values = c("Favourable" = inbo_groen, "Unfavourable" = inbo_rood, "Unknown" = inbo_grijs))  +
+  theme(axis.text.x = element_text(angle = 90))
 
 ```
 
@@ -148,17 +155,17 @@ ggplot(data = status_types, aes(x = n, y = prop_slecht, ymin = prop_slecht_lci, 
 
 ### Difference between proportions
 
-To determine the detectable difference in habitat proportions with bad quality between two points in time, we apply the *McNemar test* [@chow2003] using the function `McNemar.Test` in the R package TrialSize [@zhang2020].
+To determine the detectable difference in habitat proportions with not-good quality between two points in time, we apply the *McNemar test* [@chow2003] using the function `McNemar.Test` in the R package TrialSize [@zhang2020].
 
 The habitat monitoring scheme consists of permanent plots resulting in paired observations. When the habitat quality in a plot is measured at two time points $t_1$ and $t_2$, we can have one of the following combinations.
 
 ```{r}
 data.frame(
-  t_1 = c("bad", "good"),
-  bad = c("no change", "good -> bad"),
-  good = c("bad -> good", "no change")
+  t_1 = c("not-good", "good"),
+  not-good = c("no change", "good -> not-good"),
+  good = c("not-good -> good", "no change")
 ) %>%
-  select("$t_1$" = t_1, bad, good) %>%
+  select("$t_1$" = t_1, not-good, good) %>%
   kable(booktabs = TRUE,
         escape = FALSE, 
         format = format_table) %>%
@@ -169,11 +176,11 @@ data.frame(
 
 ```
 
-The difference in the proportion with bad quality between $t_1$ and $t_2$ corresponds with the difference in the habitat area that evolves from bad to good ($hab_{01}$) and the area that evolves from good to bad ($hab_{10}$). Figure \@ref(fig:figpowertrend) shows the minimal detectable increase/decrease in proportion with bad quality as a function of the sample size and the *dynamics* of the habitat type. We define the dynamics as a measure for the amount of habitat for which the quality changes given a total net change in habitat quality:
+The difference in the proportion with not-good quality between $t_1$ and $t_2$ corresponds with the difference in the habitat area that evolves from not-good to good ($hab_{01}$) and the area that evolves from good to not-good ($hab_{10}$). Figure \@ref(fig:figpowertrend) shows the minimal detectable increase/decrease in proportion with not-good quality as a function of the sample size and the *dynamics* of the habitat type. We define the dynamics as a measure for the amount of habitat for which the quality changes given a total net change in habitat quality:
 
 $$\frac{hab_{01} + hab_{10}}{| hab_{01} - hab_{10}|}$$
 
-Suppose that the net proportion with bad quality decreases with 10 %, then the dynamics are equal to 2 when 15% of the habitat area changes from good to bad and 5% of the habitat area from bad to good. The higher the dynamics, the smaller the minimal delectable difference.
+Suppose that the net proportion with not-good quality decreases with 10 %, then the dynamics are equal to 2 when 15% of the habitat area changes from good to not-good and 5% of the habitat area from not-good to good. The higher the dynamics, the smaller the minimal delectable difference.
 
 ```{r figpowertrend, fig.cap = "Minimal detectable effect as a function of sample size and the dynamics with $\\alpha$ = 0.05 and $\\pi$ = 0.80"}
 
@@ -274,7 +281,7 @@ data_sim_tabel %>%
   
 ```
 
-It is hard to predict which values for the dynamics can be expected for the different habitat types. However, the data of the Flemish Forest Inventory might give us an idea about the forest habitat types. Table \@ref(tab:dynamicsbostypes) shows the number of paired observations and the number of plots that evolve from bad to good quality ($n_{01}$) and from good to bad quality ($n_{10}$). For habitat type 9120 the dynamics are equal to 2.2. For the other forest habitat types we can not get a reliable estimate of the dynamics as the sample size is too low or there is no net difference.
+It is hard to predict which values for the dynamics can be expected for the different habitat types. However, the data of the Flemish Forest Inventory might give us an idea about the forest habitat types. Table \@ref(tab:dynamicsbostypes) shows the number of paired observations and the number of plots that evolve from not-good to good quality ($n_{01}$) and from good to not-good quality ($n_{10}$). For habitat type 9120 the dynamics are equal to 2.2. For the other forest habitat types we can not get a reliable estimate of the dynamics as the sample size is too low or there is no net difference.
 
 ```{r}
 
@@ -327,7 +334,7 @@ dynamics_forest %>%
 
 ### Differences between habitat quality indicators
 
-Continuous, discrete or categorical variables that are a measure for habitat quality are more sensitive to changes than a binary variable (good or bad habitat quality). Example of such variables are:
+Continuous, discrete or categorical variables that are a measure for habitat quality are more sensitive to changes than a binary variable (good or not-good habitat quality). Example of such variables are:
 
 -   values of habitat quality indicators as listed in [@oosterlynck2020]
 -   the proportion of habitat quality indicators for a certain habitat type that are favourable

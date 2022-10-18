@@ -28,7 +28,7 @@ author:
     #email: "voornaam2.achternaam2@inbo.be"
     orcid: 0000-0001-5590-323X
   - firstname: Kevin 
-    name: Schoors
+    name: Scheers
     #email: "voornaam2.achternaam2@inbo.be"
     orcid: 0000-0002-4756-4247
   - firstname: Floris 
@@ -43,7 +43,7 @@ style: Flanders
 lang: en
 
 # report specific options. See ?INBOmd::pdf_report() for full list and more details.
-shortauthor: Westra T., Oosterlynck P., Govaere L., Leyssen A., Denys L., Packet J., Schoors K. and Vanderhaeghe F.
+shortauthor: Westra T., Oosterlynck P., Govaere L., Leyssen A., Denys L., Packet J., Scheers K., Vanderhaeghe F and Vanden Borre J.
 corresponding: Toon.Westra@inbo.be
 reviewer:
   - firstnaam: Hans
@@ -93,8 +93,8 @@ output:
 
 # Acknowledgement {-}
 
-We would like to thank Hans Van Calster for reviewing this report. We would also like to thank all the field workers that have contributed to the data collection for the habitat quality monitoring scheme: Vincent Smeekens, Kevin Scheers, Jonathan Verborgt, Nils Bouillard, Ivy Jansen, Wim Jambon, Jan Meulemans, Raf Schrey, Luc Schrey, Peter Sannen,
-Alex Vandebon, Geert Fierens, Anke Balleux, Patrick Deckers, Bart Roelandt, Wouter Van Gompel, Ward Vercruysse, Sam Provoost, Indra Jacobs, Remar Erens, Robin Guelinckx, Frederic Van Lierop and Bart Van De Voorde.
+We thank Hans Van Calster for reviewing this report. We also thank all the field surveyors that have contributed to the data collection for the habitat quality monitoring scheme: Vincent Smeekens, Kevin Scheers, Jo Packet, Jonathan Verborgt, Nils Bouillard, Ivy Jansen, Wim Jambon, Jan Meulemans, Raf Schrey, Luc Schrey, Peter Sannen,
+Alex Vandebon, Geert Fierens, Anke Balleux, Patrick Deckers, Bart Roelandt, Wouter Van Gompel, Ward Vercruysse, Sam Provoost, Indra Jacobs, Remar Erens, Robin Guelinckx, Frederic Van Lierop and Bart Vandevoorde.
 
 # Abstract {-}
 
@@ -110,17 +110,17 @@ Samenvatting
 
 # Introduction
 
-Every six years member states of the European Union have to report on the conservation status of species and habitat types listed on the Habitat and Bird Directive. The Nature and Forest Research Institute (INBO) is responsible for the monitoring of these species and habitat types in Flanders, the northern part of Belgium. 
+Every six years member states of the European Union report on the conservation status of species and habitat types listed in the Annexes to the Habitats and Birds Directive. The Research Institute Nature and Forest (INBO) is responsible for the monitoring of these species and habitat types in Flanders, the northern part of Belgium. 
 
-INBO implemented a monitoring programme for habitat types that consists of following parts:
+INBO implemented a monitoring programme for habitat types that consists of the following parts:
 
 + a field based habitat mapping campaign to assess the distribution, area and range of all habitat types and subtypes in Flanders
 
 + a monitoring scheme to assess the biotic habitat quality for most habitat types and subtypes
 
-An additional part for monitoring the natural environment is currently under development. It aims at assessing the abiotic conditions of habitat types to evaluate pressures and threats. 
+An additional part for monitoring the natural environment is currently under development. It aims to assess selected abiotic conditions of habitat types to evaluate the principal pressures and threats. 
 
-In this report, we will focus on the monitoring scheme for biotic habitat quality (MHQ) and we will evaluate the design of this scheme as described in @westra2014. We will first give a short summary of the [information needs](#information) and give an overview of some of the [characteristics of MHQ](#overview). Next we will [evaluate the sample size](#samplesize). The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@westra2014]. In this report we will also perform sample size calculations for the habitat quality trend, as trend information plays a more important role in the habitat reporting. Finally, we will evaluate some alternative scenarios for the monitoring design and document the modifications of the monitoring design that will be implemented. We do this separately for [terrestrial habitat types](#scenarioterr), [standing water habitat types](#scenariostandwater) and [stream habitat types](#scenariostream).  
+In this report, we focus on the Monitoring scheme for biotic Habitat Quality (MHQ) and evaluate the design of this scheme as described by @westra2014. First, we briefly summarize the [information needs](#information) and provide an overview of some of the [characteristics of MHQ](#overview). Next we [evaluate the sample size](#samplesize). The original sample size of the monitoring scheme was based on sample size calculations for the status of the habitat quality [@westra2014]. In this report we also explore the sample size for the habitat quality trend, as trend information is key in the habitat reporting. Finally, we evaluate some alternative scenarios for the monitoring design and document the modifications of the monitoring design that will be implemented. We do this separately for [terrestrial habitat types](#scenarioterr), [standing water habitat types](#scenariostandwater) and [stream habitat types](#scenariostream).  
 
 ```{r setup, include = FALSE}
 library(knitr)
