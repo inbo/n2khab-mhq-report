@@ -29,7 +29,7 @@ Flanders represents the northern part of Belgium and is almost entirely situated
 
 The methodology used by INBO to evaluate the CS of the criterion specific structure and functions (including typical species) is based on the general guidelines by @dgenvironment2017 and is described in more detail by @paelinckx2019. It requires information per habitat type on:
 
--   the fraction of the habitat area in good condition (as assessed following the criteria and indicators by @oosterlynvk2020) and its trend
+-   the fraction of the habitat area in good condition (as assessed following the criteria and indicators by @oosterlynck2020) and its trend
 -   the status of its habitat typical species (e.g. Red List status);
 -   landscape ecological coherence of the habitat;
 -   the existence of high pressures that cannot sufficiently be remediated by conservation measures.

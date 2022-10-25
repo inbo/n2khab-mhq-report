@@ -51,7 +51,7 @@ for (i in 1:nrow(sim_data)) {
 
 ```
 
-Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil) show the results of the sample size calculations. The results can be interpreted as follows. When in reality less than 16.3 % of the habitat has a not-good quality, we will be able to conclude that the habitat proportion with a not-good quality is significantly lower than the 25%-threshold when we have sample size of 170 (with $\pi = 0.80$ and $\alpha = 0.05$). Hence, the minimal detectable difference is 8,7 %. Similarly, when in reality more than 34,8 % of the habitat has a not-good condition, we will be able to conclude that the habitat proportion with a not-good quality is significantly higher than the 25%-threshold. When the habitat proportion with a not-good quality is between 16,3 % and 34,8 %, a sample size of 170 will not allow us to detect a difference from the 25%-threshold with a probability of at least 0.80 ($\pi$) and a type I error of at most 0.05 ($\alpha$).
+Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil) show the results of the sample size calculations. The results can be interpreted as follows. When in reality less than 16.3 % of the habitat is in not-good condition, we will be able to conclude that the habitat proportion in not-good condition is significantly lower than the 25%-threshold when we have sample size of 170 (with $\pi = 0.80$ and $\alpha = 0.05$). Hence, the minimal detectable difference is 8,7 %. Similarly, when in reality more than 34,8 % of the habitat has a not-good condition, we will be able to conclude that the habitat proportion with a not-good quality is significantly higher than the 25%-threshold. When the habitat proportion with a not-good quality is between 16,3 % and 34,8 %, a sample size of 170 will not allow us to detect a difference from the 25%-threshold with a probability of at least 0.80 ($\pi$) and a type I error of at most 0.05 ($\alpha$).
 
 ```{r figpowerverschil, fig.cap = "Relationship between sample size and minimal detectable difference"}
 
@@ -116,13 +116,15 @@ status_types <- bind_rows(
 
 ```
 
-In Figure \@ref(fig:figrapportage) we show the estimated habitat proportions in not-good condition as reported in 2019, the 95% - confidence interval of the estimate and the sample size on which the estimate is based (text above the condidence interval). The 2019 report is based on the plots that were measured in the period 2014 - 2018. This means that only a subset of the total sample size was measured at that time, as the total monitoring cycle was 12 years. This subset is still representative for the sample as a whole due to the nature of the sampling design. Only for the more common forest habitat types we already reached the total sample size, as we could make use of the measurements of the Flemish Forest Inventory.
+In Figure \@ref(fig:figrapportage) we show the estimated habitat proportions in not-good condition for terrestrial habitats, as reported in 2019. The figure also shows the 95% - confidence interval of the estimate and the sample size on which the estimate is based (text above the confidence interval). The estimates are ordered in the x-axis from low to high sample size. Note the difference between Figure \@ref(fig:figrapportage) and Figure \@ref(fig:figpowerverschil). Figure \@ref(fig:figrapportage) shows the *estimated* proportion based on one sample, while the *real* proportion (the population parameter) is unknown. In Figure \@ref(fig:figpowerverschil) the y-axis corresponds with the (real) proportion in the population and we assume a large number of samples.  
 
-The habitat types are represented by the habitat code and the colour corresponds with the habitat quality evaluation: favourable, unknown or unfavourable. For many habitat types we can already conclude that the quality is unfavourable, even with a sample size much smaller than 170. This is because in many cases the habitat proportion with not-good quality is much higher than the 25%-threshold and such large differences can be detected with sufficient power based on smaller sample sizes, as can be seen in Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil). Only for two habitat types (2160 and 2190) we need a higher precision in order to conclude if the proportion with not-good quality is higher or lower than the 25%-threshold.
+The 2019 report is based on the plots that were measured in the period 2014 - 2018. This means that only a subset of the total sample size was measured at that time, as the total monitoring cycle was 12 years. This subset is still representative for the sample as a whole due to the nature of the sampling design. Only for the more common forest habitat types we already reached the total sample size, as we could make use of the measurements of the Flemish Forest Inventory.
+
+The habitat types are represented by the habitat code and the colour corresponds with the habitat quality evaluation: favourable, unknown or unfavourable. For many habitat types we can already conclude that the quality is unfavourable, even with a sample size much smaller than 170. This is because in many cases the habitat proportion in not-good condition is much higher than the 25%-threshold and such large differences can be detected with sufficient power based on smaller sample sizes, as can be seen in Figure \@ref(fig:figpowerverschil) and Table \@ref(tab:tab-powerverschil). Only for two habitat types (2160 and 2190) we need a higher precision in order to conclude if the proportion with not-good quality is higher or lower than the 25%-threshold.
 
 In the coming years, it will be more relevant for nature policy to have information on the trend of habitat quality (does the quality of the unfavourable habitat types improve?) than to invest in a higher precision of the status of habitat quality. In other words, it will probably be better to shorten the original monitoring cycle and to start revisiting the measured plots sooner than originally planned. This requires an adjustment of the monitoring design. Therefore we will also perform sample size calculations for trends in habitat quality. This way we can find a good balance between the precision of the habitat quality status and the precision of the trend. 
 
-```{r figrapportage, fig.height= 6, fig.width= 6, fig.cap = "Results of the habitat reporting"}
+```{r figrapportage, fig.height = 4.5, fig.width= 5, fig.cap = "Results of the habitat reporting for terrestrial habitat types"}
 
 sim_data0.8 <- sim_data %>%
   filter(power == 0.8) %>%
@@ -153,19 +155,23 @@ ggplot(data = status_types, aes(x = type, y = prop_slecht, ymin = prop_slecht_lc
 
 ## Trends in habitat quality
 
+We will first assume that the habitat condition is binary variable (good or not-good) and analyse which difference between proportions of habitat in not-good condition we can detect.
+
+Next, we will evaluate which differences we can detect when a continuous variable is used to express the habitat condition. 
+
 ### Difference between proportions
 
-To determine the detectable difference in habitat proportions with not-good quality between two points in time, we apply the *McNemar test* [@chow2003] using the function `McNemar.Test` in the R package TrialSize [@zhang2020].
+To determine the detectable difference in habitat proportions in not-good condition between two points in time, we apply the *McNemar test* [@chow2003] using the function `McNemar.Test` in the R package TrialSize [@zhang2020].
 
 The habitat monitoring scheme consists of permanent plots resulting in paired observations. When the habitat quality in a plot is measured at two time points $t_1$ and $t_2$, we can have one of the following combinations.
 
 ```{r}
 data.frame(
   t_1 = c("not-good", "good"),
-  not-good = c("no change", "good -> not-good"),
+  not_good = c("no change", "good -> not-good"),
   good = c("not-good -> good", "no change")
 ) %>%
-  select("$t_1$" = t_1, not-good, good) %>%
+  select("$t_1$" = t_1, "not-good" = not_good, good) %>%
   kable(booktabs = TRUE,
         escape = FALSE, 
         format = format_table) %>%
@@ -180,7 +186,7 @@ The difference in the proportion with not-good quality between $t_1$ and $t_2$ c
 
 $$\frac{hab_{01} + hab_{10}}{| hab_{01} - hab_{10}|}$$
 
-Suppose that the net proportion with not-good quality decreases with 10 %, then the dynamics are equal to 2 when 15% of the habitat area changes from good to not-good and 5% of the habitat area from not-good to good. The higher the dynamics, the smaller the minimal delectable difference.
+Suppose that the net proportion with not-good quality decreases with 10 %, then the dynamics are equal to 2 when 15% of the habitat area changes from good to not-good and 5% of the habitat area from not-good to good. The higher the dynamics, the higher the minimal detectable difference.
 
 ```{r figpowertrend, fig.cap = "Minimal detectable effect as a function of sample size and the dynamics with $\\alpha$ = 0.05 and $\\pi$ = 0.80"}
 
@@ -281,7 +287,7 @@ data_sim_tabel %>%
   
 ```
 
-It is hard to predict which values for the dynamics can be expected for the different habitat types. However, the data of the Flemish Forest Inventory might give us an idea about the forest habitat types. Table \@ref(tab:dynamicsbostypes) shows the number of paired observations and the number of plots that evolve from not-good to good quality ($n_{01}$) and from good to not-good quality ($n_{10}$). For habitat type 9120 the dynamics are equal to 2.2. For the other forest habitat types we can not get a reliable estimate of the dynamics as the sample size is too low or there is no net difference.
+It is hard to predict which values for the dynamics can be expected for the different habitat types. However, data from the Flemish Forest Inventory might give us an idea for the forest habitat types. Table \@ref(tab:dynamicsbostypes) shows the number of paired observations and the number of plots that evolve from not-good to good quality ($n_{01}$) and from good to not-good quality ($n_{10}$). For habitat type 9120 the dynamics are equal to 2.2. For the other forest habitat types we can not get a reliable estimate of the dynamics as the sample size is too low or there is no net difference. Anyway, assuming high dynamics in sample size calculation does not seem exaggerated.
 
 ```{r}
 
@@ -325,7 +331,7 @@ options(knitr.kable.NA = '')
 
 dynamics_forest %>%
   select("habitat type" = type, "$n_{paired}$" = n_gepaard, "$n_{01}$" = n_01 , "$n_{10}$" = n_10, dynamics) %>%
-  kable(caption = "Observed dynamics for forest habitat types based on the data of the Flemish Forest Inventory",
+  kable(caption = "Observed dynamics for forest habitat types based on data from the Flemish Forest Inventory",
         booktabs = TRUE,
         escape = FALSE, 
         format = format_table) %>%
@@ -334,7 +340,7 @@ dynamics_forest %>%
 
 ### Differences between habitat quality indicators
 
-Continuous, discrete or categorical variables that are a measure for habitat quality are more sensitive to changes than a binary variable (good or not-good habitat quality). Example of such variables are:
+Continuous, discrete or categorical variables that measure habitat quality are more sensitive to changes than a binary variable (good or not-good habitat condition). Examples of such variables are:
 
 -   values of habitat quality indicators as listed in [@oosterlynck2020]
 -   the proportion of habitat quality indicators for a certain habitat type that are favourable
@@ -357,7 +363,7 @@ sim_data <- expand.grid(n = 20:400,
 
 #### Sample size calculation for continuous variables
 
-For the exploration of the detectable effect size as a function of the sample size, we assume continuous variables with a normal distribution. This enables a straightforward power analysis based on the paired t-test using the `pwr.t.test` of the pwr package [@champely2020]. Although not all habitat quality indicators are normally distributed, we believe that this method will give us a general idea on the relationship between detectable effect size and sample size.
+For the exploration of the detectable effect size as a function of the sample size, we assume continuous variables with a normal distribution. This enables a straightforward power analysis based on the paired t-test using the `pwr.t.test` of the pwr package [@champely2020]. Although not all habitat quality indicators will have normally distributed paired differences, we believe that this method will give us a general idea on the relationship between detectable effect size and sample size.
 
 When applying the paired t-test, the detectable effect size ($d$) equals the mean of the differences between paired observations divided by the standard deviation of the differences. Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd) show the detectable effect size as a function of the sample size.
 
@@ -383,7 +389,7 @@ sim_data %>%
   
 ```
 
-The detectable effect is a quite abstract measure and  not so easy to interpret. To make things more specific, in Figure \@ref(fig:fig-verschil-cont2) and Table \@ref(tab:tab-powertrend) we show a variable expressed as a percentage with values between 0 and 100. This could be for example the proportion of habitat indicators that are favourable on a certain location or the vegetation cover of a certain species group. With a sample size of 170 kunnen we can detect a mean difference of approximately 1 to 3 % depending on the standard deviation of the difference. With a sample size of 80 this is approximately 1.5 to 5 %.
+The detectable effect is a quite abstract measure and  not so easy to interpret. To make things more  comprehensible, in Figure \@ref(fig:fig-verschil-cont2) and Table \@ref(tab:tab-powertrend) we show a variable expressed as a percentage with values between 0 and 100. This could be for example the proportion of habitat indicators that are favourable on a certain location or the vegetation cover of a certain species group. With a sample size of 170 we can detect a mean difference of approximately 1 to 3 % depending on the standard deviation of the difference. With a sample size of 80 this is approximately 1.5 to 5 %.
 
 ```{r fig-verschil-cont2, fig.cap = "Detectable mean difference as a function of sample size and standard deviation of the difference for a variable that is expressed as a percentage with $\\alpha=0.05$ and $\\pi=0.80$"}
 sim_data %>%
@@ -393,7 +399,7 @@ ggplot(aes(x = n, y = mean_difference/100, colour = factor(sd_difference))) +
   scale_x_log10(breaks = c(20, 40, 80 , 170, 400, 1000)) + 
   scale_y_continuous(labels = scales::percent) +
   labs(linetype = expression(alpha),
-       colour = "Standaard deviation of difference",
+       colour = "Standaard deviation \nof difference",
        y = "Mean difference",
        x = "Sample size") 
 ```
@@ -416,26 +422,40 @@ sim_data %>%
   
 ```
 
-We will further explore the data of the Flemish Forest Inventory [@wouters_ontwerp_2008] to get a rough idea on which standard deviation of differences we can expect for habitat quality indicators. 
+We will further explore the data of the Flemish Forest Inventory [@wouters_ontwerp_2008] to get a rough idea of the standard deviation of differences we can expect for habitat quality indicators. 
 
 #### Example 1: trend in proportion of favourable indicators for forest habitat types
 
-The Forest Inventory data allows the calculation and evaluation of most habitat quality indicators defined in [@oosterlynck2020] for the plots that are located in a forest habitat types. Based on this, we can determine the proportion of the total number of indicators that are favourable per plot. Figure \@ref(fig:figbos) shows this proportion for the plots that were measured in both the first period (1997-1998) and the second period (2009-2018) of the Flemish Forest Inventory.
+The Forest Inventory data allows the calculation and evaluation of most habitat quality indicators defined in [@oosterlynck2020] for plots that are located in a forest habitat types. Based on this, we can determine the proportion of the total number of indicators that are favourable per plot. Figure \@ref(fig:figbos) shows this proportion for plots that were measured in both the first period (1997-1998) and the second period (2009-2018) of the Flemish Forest Inventory.
 
-```{r figbos, fig.cap= "Proportion of habitat quality indicators that are favourable per plot, for both periods of the Flemish Forest Inventory"}
+```{r figbos, fig.height = 4.2, fig.width= 5.3, fig.cap= "Proportion of habitat quality indicators that are favourable per plot, for both periods of the Flemish Forest Inventory"}
 data_bos %>%
   filter(paired) %>%
   dplyr::select(plot_id, periode, type, aandeel_gunstig) %>%
   mutate(aandeel_gunstig = aandeel_gunstig/100) %>%
   spread(key = "periode", value = "aandeel_gunstig") %>%
-  ggplot(aes(x= periode1, y = periode2, colour = type)) +
-  geom_point(alpha = 0.6) +
+  ggplot(aes(x= periode1, y = periode2)) +
+  #geom_point(alpha = 0.6) +
+  stat_sum(alpha = 0.6) +
   geom_abline(slope = 1, intercept = 0, linetype = 2) +
   labs(x = "Period 1", y = "Period 2") +
   scale_x_continuous(labels = scales::percent, limits = c(0,1)) +
   scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
+  scale_size("Number \nof plots") +
   facet_wrap(~type)
 ```
+```{r eval = FALSE}
+data_bos %>%
+  filter(paired) %>%
+  dplyr::select(plot_id, periode, type, aandeel_gunstig) %>%
+  spread(key = periode, value = aandeel_gunstig) %>%
+  mutate(verschil_aandeel_gunstig = periode2 - periode1) %>%
+  ggplot(aes(x = verschil_aandeel_gunstig)) +
+  geom_bar() +
+  facet_wrap(~type)
+```
+
+
 
 ```{r}
 verschil_aandeel_gunstig <- data_bos %>%
@@ -475,16 +495,18 @@ verschil_aandeel_gunstig <- verschil_aandeel_gunstig %>%
   bind_rows(verschil_aandeel_gunstig_tot)
 ```
 
-Table \@ref(tab:tabmeandif) gives the mean difference of the proportion of favourable indicators between period 2 and period 1, the standard deviation of the difference and the detectable effect size ($d$). The table also shows the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). The standard deviation of the differences ranges approximately between 7% and 11%.
+Table \@ref(tab:tabmeandif) gives the mean difference of the proportion of favourable indicators between period 2 and period 1, the standard deviation of the difference and the detectable effect size ($d$). The table also shows the p-value of the paired t-test and the conclusion that can be drawn per type and for all types together ('91xx'). The standard deviation of the differences ranges approximately from 7% to 11%.
 
-When the estimated effect size ($d$) would correspond with the true effect size, a sample size of 80 would be sufficient to detect the effect for 9130 and 9140 with as can be seen in Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd). For the other habitat types we would need a higher sample size, but these are quite small effect sizes.    
+When the estimated effect size ($d$) would correspond with the true effect size, a sample size of 80 would be sufficient to detect the effect for 9130 and 9160 as can be seen in Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd). For the other habitat types we would need a higher sample size, but these are quite small effect sizes.    
 
 ```{r tabmeandif}
 verschil_aandeel_gunstig %>%
   dplyr::select("habitat type" = type, "sample size" = n, "mean difference" = mean_diff, "sd difference" = sd_diff, d, "p-value" = t.test_p_value, conclusion = uitspraak) %>%
-  kable(caption = "Observed difference of the proportion of favourable indicators for forest habitat types",
+  kable(caption = "Observed difference of the proportion of favourable indicators for forest habitat types", 
         booktabs = TRUE, 
-        format = format_table) %>%
+        format = format_table,
+        digits = 3
+        ) %>%
   kable_styling() %>%
   column_spec(4, width = "2.5cm")
 
@@ -505,6 +527,17 @@ verschil_aandeel_gunstig_detecteerbaar <- sim_data %>%
          sd_diff_range = str_c(sd_diff_low, " - ", sd_diff_high),
          mean_diff_range = str_c(mean_diff_low, " - ", mean_diff_high)) 
 
+verschil_aandeel_gunstig_9210 <- verschil_aandeel_gunstig %>%
+  filter(type == "9120")
+
+verschil_aandeel_gunstig_9210_detecteerbaar <- sim_data %>%
+  filter(n %in% c(40, 80, 170)) %>%
+  mutate(d = round(d, 2)) %>%
+  filter(alpha == 0.05) %>%
+  distinct(n, d, alpha) %>%
+  mutate(sd_diff = verschil_aandeel_gunstig_9210$sd_diff,
+         mean_diff = d * sd_diff) 
+
 ```
 
 ```{r tabdiffdetect1}
@@ -518,16 +551,72 @@ verschil_aandeel_gunstig_detecteerbaar %>%
   
 ```
 
+```{r, cache = TRUE}
+
+calc_power_simr <- function(model, sim_n, sim_effect) {
+  
+  fixef(model)["periodeperiode2"] <- sim_effect
+  model_sim <- extend(model, along = "id_group", n = sim_n)
+  sim <- powerSim(model_sim, nsim = 250)
+  
+  summary <- summary(sim)
+  
+  result_temp <- data.frame(n = sim_n,
+                            effect = sim_effect,
+                            power = summary$mean,
+                            lcl = summary$lower,
+                            ucl = summary$upper)
+  
+  return(result_temp)
+  
+}
+
+calc_power_simr_df <- function(model, df) {
+  
+  results <- NULL
+  
+  for(i in 1:nrow(df)) {
+    
+    result_temp <- calc_power_simr(model, df[i,]$n, df[i,]$effect)
+    
+    results <- bind_rows(results,
+                         result_temp)
+    
+  }
+  
+  return(results)
+  
+}
+
+set.seed(675)
+
+data_bos_paired <- data_bos %>%
+  filter(paired) %>%
+  filter(type == "9120") %>%
+  mutate(aandeel_gunstig = aandeel_gunstig/100)
+
+model_9120 <- lmer(formula = aandeel_gunstig ~ periode + (1|id_group),
+              data = data_bos_paired)
+
+verschil_aandeel_gunstig_9210_detecteerbaar <- verschil_aandeel_gunstig_9210_detecteerbaar %>%
+  mutate(effect = mean_diff/100)
+
+verschil_aandeel_gunstig_9210_simr <- calc_power_simr_df(model_9120, verschil_aandeel_gunstig_9210_detecteerbaar)
+```
+
+
+
+
 \needspace{50mm}
 
 #### Example 2: trend in indicator values for forest habitat types
 
 Here we use the Forest Inventory data to get a rough idea on the detectable effect size for individual habitat quality indicators. We analyse four indicators:
 
-- number of keys species in the herb layer
+- number of key species in the herb layer
 - proportion of key species in the herb layer
 - total cover of encroachment species
-- total cover of invasive exotic species in the shrub and tree layer
+- total cover of invasive alien species in the shrub and tree layer
 
 
 ```{r}
@@ -543,9 +632,9 @@ voorwaarden_bos_select <- voorwaarden_bos %>%
   filter(Meetnet == "VBI") %>%
   filter(Voorwaarde %in% c("aandeel sleutelsoorten kruidlaag", "aantal sleutelsoorten kruidlaag", "bedekking verruiging totaal", "bedekking invasieve exoten boom- en struiklaag")) %>%
   mutate(voorwaarde_engels = ifelse(Voorwaarde == "aandeel sleutelsoorten kruidlaag", "proportion of key species in the herb layer",
-                                    ifelse(Voorwaarde == "aantal sleutelsoorten kruidlaag", "number of keys species in the herb layer",
+                                    ifelse(Voorwaarde == "aantal sleutelsoorten kruidlaag", "number of key species in the herb layer",
                                            ifelse(Voorwaarde == "bedekking verruiging totaal", "total cover of encroachment species",
-                                                  "total cover of invasive exotic species in the shrub and tree layer")))) %>%
+                                                  "total cover of invasive alien species in the shrub and tree layer")))) %>%
   filter(Versie == "Versie 3") %>%
   filter(plot_id %in% data_bos_paired$plot_id) %>%
   dplyr::select(plot_id, periode, type, voorwaarde = Voorwaarde, voorwaarde_engels, waarde = Waarde) %>%
@@ -560,13 +649,24 @@ voorwaarden_bos_select <- voorwaarden_bos %>%
 
 Figure \@ref(fig:indicatorenbos) shows the indicator values for both periods of the Flemish Forest Inventory.
 
-```{r indicatorenbos, fig.width = 7.5, fig.height= 6, fig.cap = "Indicatorwaarden voor de meetpunten van de Vlaamse bosinventarisatie"}
+```{r indicatorenbos, fig.width = 7.5, fig.height= 6, fig.cap = "Indicator values for both periods of the Flemish Forest Inventory "}
 
 voorwaarden_bos_select %>%
+  mutate(voorwaarde_engels = str_wrap(voorwaarde_engels)) %>%
   ggplot(aes(periode1, periode2, colour = type)) +
   geom_point(alpha = 0.5) +
   facet_wrap( ~ voorwaarde_engels, scales = "free", ncol = 2) +
-  geom_abline(slope = 1, intercept = 0, linetype = 2)
+  geom_abline(slope = 1, intercept = 0, linetype = 2) +
+  labs(x = "Period 1", y =" Period 2")
+
+```
+
+```{r indicatorenbos2,  fig.height= 7, fig.cap = "Indicatorwaarden voor de meetpunten van de Vlaamse bosinventarisatie", eval=FALSE}
+
+voorwaarden_bos_select %>%
+  ggplot(aes(x = verschil_voorwaarde)) +
+  geom_histogram(alpha = 0.5) +
+  facet_wrap( ~ voorwaarde_engels, scales = "free", ncol = 2)
 ```
 
 ```{r}
@@ -608,12 +708,13 @@ verschil_voorwaarden %>%
   dplyr::select("habitat type" = type, "sample size" = n, indicator = voorwaarde_engels, "mean diff" = mean_diff, "sd diff" = sd_diff, d, "p-value" = t.test_p_value, conclusion = uitspraak) %>%
   kable(caption = "Observed effect size ($d$) for four habitat quality indicators",
         booktabs = TRUE, 
-        format = format_table) %>%
+        format = format_table,
+        digits = 3) %>%
   kable_styling() %>%
   column_spec(3, width = "4cm") %>%
   column_spec(c(4,5,7), width = "1cm") %>%
   column_spec(c(1, 2), width = "0.8cm") %>%
-  collapse_rows(c(1, 2)) 
+  collapse_rows(c(1,2))
 ```
 
 
@@ -625,7 +726,7 @@ verschil_voorwaarden_range <- verschil_voorwaarden %>%
   summarise(sd_diff_low = floor(min(sd_diff)),
          sd_diff_high = ceiling(max(sd_diff))) %>%
   ungroup() %>%
-  expand(nesting(voorwaarde_engels, sd_diff_low, sd_diff_high), n = c(40, 80, 170))
+  tidyr::expand(nesting(voorwaarde_engels, sd_diff_low, sd_diff_high), n = c(40, 80, 170))
   
 verschil_voorwaarden_detecteerbaar <- sim_data %>%
   filter(n %in% c(40, 80, 170)) %>%
@@ -639,6 +740,34 @@ verschil_voorwaarden_detecteerbaar <- sim_data %>%
          mean_diff_range = str_c(mean_diff_low, " - ", mean_diff_high)) 
 
 ```
+
+
+```{r tabdiffdetect3}
+
+voorwaarden_mean_p1 <- voorwaarden_bos_select %>%
+  group_by(voorwaarde_engels) %>%
+  summarise(mean_p1 = mean(periode1),
+            mean_p2 = mean(periode2)) %>%
+  ungroup()
+
+
+verschil_voorwaarden_91xx <- verschil_voorwaarden %>%
+  filter(type == "91xx") %>%
+  tidyr::expand(nesting(voorwaarde_engels, sd_diff), n = c(40, 80, 170))
+  
+verschil_voorwaarden_detecteerbaar_91xx <- sim_data %>%
+  filter(n %in% c(40, 80, 170)) %>%
+  mutate(d = round(d, 2)) %>%
+  filter(alpha == 0.05) %>%
+  distinct(n, d) %>%
+  left_join(verschil_voorwaarden_91xx, by = "n") %>%
+  left_join(voorwaarden_mean_p1, by = "voorwaarde_engels") %>%
+  mutate(mean_diff_detect = d * sd_diff,
+         log_effect = log(mean_diff_detect + mean_p1) - log(mean_p1)) 
+
+```
+
+
 
 \needspace{200mm}
 
@@ -656,4 +785,134 @@ verschil_voorwaarden_detecteerbaar %>%
   column_spec(1, width = "4cm") %>%
   column_spec(c(2,3,5), width = "2cm") %>%
   collapse_rows(c(1, 2))
+```
+
+```{r}
+n_keyspecies_91xx <- voorwaarden_bos_select %>%
+ # filter(type == "9120") %>%
+  filter(voorwaarde == "aantal sleutelsoorten kruidlaag") %>%
+  select(-verschil_voorwaarde) %>%
+  pivot_longer(cols = c("periode1", "periode2"), names_to = "periode", values_to = "n") %>%
+  mutate(periode_n = str_remove(periode, "periode"),
+         periode = factor(periode)) %>%
+  mutate(id = str_c(plot_id, "_", periode_n)) %>%
+  left_join(select(data_bos_paired, id, id_group), by = "id")
+
+model_ks_91xx_poisson <- glmer(formula = n ~ periode + (1|id_group),
+              data = n_keyspecies_91xx,
+              family = "poisson")
+
+model_ks_91xx_poisson_summary <- summary(model_ks_9120_poisson)
+
+plotQQunif(model_ks_9120_poisson)
+
+E1 <- resid(model_ks_9120_poisson, type = "pearson")
+N <- nrow(n_keyspecies_9120)
+p <- length(fixef(model_ks_9120_poisson)) + 1
+overdispersion <- sum(E1^2) / (N - p)
+
+verschil_keyspecies_detecteerbaar_91xx <- verschil_voorwaarden_detecteerbaar_91xx %>%
+  filter(voorwaarde_engels == "number of key species in the herb layer") %>%
+  mutate(effect = log_effect)
+
+
+
+
+verschil_keyspecies_simr <- calc_power_simr_df(model_ks_9120_poisson, verschil_keyspecies_detecteerbaar_91xx)
+
+
+data_simr <- tibble(n = c(40, 80, 170)) %>%
+  tidyr::expand( n, nspecies_p1 = c(2, 3, 5), increase = seq(0.1, 0.4, by = 0.05)) %>%
+  mutate(nspecies_p2 = nspecies_p1 + increase*nspecies_p1,
+         effect = log(nspecies_p2) - log(nspecies_p1))
+
+check <- calc_power_simr(model_ks_9120_poisson, sim_n = 40, sim_effect = -0.1)
+
+simr_result <- calc_power_simr_df(model_ks_9120_poisson, df = data_simr)
+
+simr_result2 <- simr_result %>%
+  bind_cols(select(data_simr, nspecies_p1, nspecies_p2, increase))
+
+write_csv2(simr_result2, "../output/simulation_nspecies.csv")
+
+```
+
+
+
+```{r}
+simr_result2 %>%
+  ggplot(aes(y = power, ymin = lcl, ymax = ucl, x = factor(n), group = factor(increase), colour = factor(increase))) +
+  geom_point() +
+  geom_errorbar(width = 0.1, alpha = 0.8) +
+  geom_line() +
+  geom_hline(yintercept = 0.8, linetype = 2) +
+  facet_wrap(~nspecies_p1) +
+  labs(colour = "Relative increase", x = "Sample size")
+```
+
+
+```{r}
+simr_select_results <- simr_result2 %>%
+  filter(nspecies_p1 == 3) %>%
+  filter(lcl >= 0.8) %>%
+  group_by(n) %>%
+  slice_min(lcl, n = 1) %>%
+  ungroup()
+```
+
+
+
+
+
+```{r}
+encroachement_91xx <- voorwaarden_bos_select %>%
+ # filter(type == "9120") %>%
+  filter(voorwaarde == "bedekking verruiging totaal") %>%
+  select(-verschil_voorwaarde) %>%
+  pivot_longer(cols = c("periode1", "periode2"), names_to = "periode", values_to = "cover") %>%
+  mutate(periode_n = str_remove(periode, "periode"),
+         periode = factor(periode)) %>%
+  mutate(id = str_c(plot_id, "_", periode_n)) %>%
+  left_join(select(data_bos_paired, id, id_group), by = "id")
+
+encroachement_91xx %>%
+  ggplot(aes(x = cover, fill = periode)) +
+  geom_density()
+
+
+model_encroachement_91xx <- lmer(formula = cover ~ periode + (1|id_group),
+              data = encroachement_91xx)
+
+model_encroachement_91xx_summary <- summary(model_encroachement_91xx)
+
+plotQQunif(model_encroachement_91xx)
+
+E1 <- resid(model_ks_9120_poisson, type = "pearson")
+N <- nrow(n_keyspecies_9120)
+p <- length(fixef(model_ks_9120_poisson)) + 1
+overdispersion <- sum(E1^2) / (N - p)
+
+verschil_keyspecies_detecteerbaar_91xx <- verschil_voorwaarden_detecteerbaar_91xx %>%
+  filter(voorwaarde_engels == "total cover of encroachment species")
+
+
+
+
+verschil_keyspecies_simr <- calc_power_simr_df(model_ks_9120_poisson, verschil_keyspecies_detecteerbaar_91xx)
+
+
+data_simr <- tibble(n = c(40, 80, 170)) %>%
+  tidyr::expand( n, nspecies_p1 = c(2, 3, 5), increase = seq(0.1, 0.4, by = 0.05)) %>%
+  mutate(nspecies_p2 = nspecies_p1 + increase*nspecies_p1,
+         effect = log(nspecies_p2) - log(nspecies_p1))
+
+check <- calc_power_simr(model_ks_9120_poisson, sim_n = 40, sim_effect = -0.1)
+
+simr_result <- calc_power_simr_df(model_ks_9120_poisson, df = data_simr)
+
+simr_result2 <- simr_result %>%
+  bind_cols(select(data_simr, nspecies_p1, nspecies_p2, increase))
+
+write_csv2(simr_result2, "../output/simulation_nspecies.csv")
+
 ```

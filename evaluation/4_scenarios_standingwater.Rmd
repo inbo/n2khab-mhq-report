@@ -2,7 +2,7 @@
 
 ## Standing water habitat types included in MHQ
 
-A monitoring scheme for all standing water habit types and subtypes are included in MHQ. These are all the habitat types for which the code in Annex \@ref(annex1) starts with 31, but also the habitat subtype 2190_a (Dune slack ponds). Habitat subtype 2190_a was overlooked in @westra2014, however a monitoring scheme was designed and implemented in 2016.
+A monitoring scheme for all standing water habitat types and subtypes are included in MHQ. These are all the habitat types for which the code in Appendix \@ref(annex1) starts with 31 and habitat subtype 2190_a (Dune slack ponds). Habitat subtype 2190_a was not included in @westra2014 as it was not yet designated at that time. However a monitoring scheme was designed and implemented in 2016.
 
 ## Original design
 
@@ -26,13 +26,13 @@ The original design can be summarized as follows:
 
 Although a monitoring cycle of 12 years was proposed in @westra2014, the monitoring schemes for standing water habitat types were implemented with a monitoring cycle of 6 years. This is because the field work could be combined with other surveys. To be able to detect short-term trends (12 years) in habitat quality we will keep this monitoring cycle of 6 years.
 
-## Impact of the sample frame on the sample size in the original design
+## Impact of the sampling frame on the sample size in the original design
 
 The number of water bodies within each stratum will have an impact on the number of selected sampling units. The main impact is that all water bodies in the area classes `5 ha < area < 50 ha` and `area >= 50 ha` are selected in the original design. Furthermore, the number of population units also has an impact on the finite population correction.
 
 Therefore, we want to compare the sampling frame that was originally used for designing the monitoring schemes with the latest available sampling frame.
 
-The original sample frame consists of the polygons with standing water habitat types in the 2014 version of the Natura 2000 habitat map.
+The original sampling frame consists of the polygons with standing water habitat types in the 2014 version of the Natura 2000 habitat map.
 
 ```{r}
 
@@ -75,10 +75,10 @@ sac_sf <- read_admin_areas(dsn = "sac") %>%
 
 Since 2014 new data sources became available:
 
--   the map of the water surfaces in Flanders [@inbo2020_2]
--   updated information on the presence of aquatic habitat types, made available through the 2020 version of the Natura 2000 habitat map [@inbo2020]
+-   the map of the water surfaces in Flanders [@leyssen2020]
+-   updated information on the presence of aquatic habitat types, made available through the 2020 version of the Natura 2000 habitat map [@desaeger2020]
 
-Both data sources are combined in the map of standing water habitat types [@westra2021_2], which is used as the current sample frame. It can be imported in R by using the function `read_watersurfaces_hab()` of the n2khab package [@vanderhaeghe2022].
+Both data sources are combined in the map of standing water habitat types [@westra2021_2], which is used as the current sampling frame. It can be imported in R by using the function `read_watersurfaces_hab()` of the n2khab package [@vanderhaeghe2022].
 
 ```{r}
 
@@ -163,7 +163,7 @@ samplesize <- watersurfaces_hab_distribution %>%
 
 ```
 
-Table \@ref(tab:tabtotalsz) shows the total sample size and the total number of sampling units in the sample frame, for both the original sample frame (habitatmap_2014) and the current sample frame (watersurfaces_hab_2021). It is clear that the watersurfaces_hab_2021 sample frame contains a lot more sampling units than the original sample frame (habitatmap_2014), which results in a much higher sample size. In Table \@ref(tab:tabsamplesizerepro) the comparison is shown per habitat type and subtype. The current sample frame also contains the 2190_a habitat subtype resulting in the selection of sampling units for this subtype. This is not the case for the original sample frame.
+Table \@ref(tab:tabtotalsz) shows the total sample size and the total number of sampling units in the sampling frame, for both the original sampling frame (habitatmap_2014) and the current sampling frame (watersurfaces_hab_2021). It is clear that the watersurfaces_hab_2021 sampling frame contains a lot more sampling units than the original sampling frame (habitatmap_2014), which results in a much higher sample size. In Table \@ref(tab:tabsamplesizerepro) the comparison is shown per habitat type and subtype. The current sampling frame also contains the 2190_a habitat subtype resulting in the selection of sampling units for this subtype. This is not the case for the original sampling frame.
 
 ```{r samplesizetotal}
 samplesize_total <- samplesize %>%
@@ -182,9 +182,9 @@ samplesize_total <- samplesize %>%
 ```{r tabtotalsz, eval = TRUE}
 samplesize_total %>%
   mutate(version = ifelse(version == "habitatmap_2014", "habitatmap\\_2014", "watersurfaces\\_hab\\_2021")) %>%
-  rename("version sample frame" = version) %>%
+  rename("version sampling frame" = version) %>%
   select(-scenario) %>%
-  kable(caption = "Total sample size per area class for standing water habitat types based on the original design and the total number of sampling units for both the original sample frame (habitatmap\\_2014) and the current sample frame (watersurfaces\\_hab\\_2021)",
+  kable(caption = "Total sample size per area class for standing water habitat types based on the original design and the total number of sampling units for both the original sampling frame (habitatmap\\_2014) and the current sampling frame (watersurfaces\\_hab\\_2021)",
         escape = FALSE,
         booktabs = TRUE, 
         format = format_table) %>%
@@ -209,8 +209,8 @@ samplesize_overview %>%
          type = ifelse(type == "2190_a", "2190\\_a",
                        ifelse(type == "3130_aom", "3130\\_aom", 
                               ifelse(type == "3130_na", "3130\\_na", type)))) %>%
-  rename("version sample frame" = version) %>%
-  kable(caption = "Total sample size and the total number of sampling units per standing water habitat type and per area class based on the original design for both the original sample frame (habitatmap\\_2014) and the current sample frame (watersurfaces\\_hab\\_2021)",
+  rename("version sampling frame" = version) %>%
+  kable(caption = "Total sample size and the total number of sampling units per standing water habitat type and per area class based on the original design for both the original sampling frame (habitatmap\\_2014) and the current sampling frame (watersurfaces\\_hab\\_2021)",
         booktabs = TRUE,
         escape = FALSE, 
         format = format_table) %>%
@@ -220,7 +220,7 @@ samplesize_overview %>%
   
 ```
 
-The total sample size almost doubles. Since the available resources for field work has not increased, the sample size that results from the current sample frame is not feasible. Therefore we will explore two alternative scenarios.
+The total sample size almost doubles and the available resources for field work have decreased. This makes that the sample size that results from the current sampling frame is not feasible. Therefore we will explore two alternative scenarios.
 
 ## Alternative scenarios
 
@@ -229,8 +229,8 @@ We propose the following alternative scenarios:
 + draw a sample for all types with more than 30 water surfaces in the area classes `area <= 1 ha`, `1 ha < area <= 5 ha` and `5 ha < area <= 50 ha`
   + select an initial sample size of 80 for Flanders
   + select extra sampling units within SAC
-    + alternative 1: until 80 sampling units are selected
-    + alternative 2: no extra sampling units
+    + **alternative 1: until 80 sampling units are selected**
+    + **alternative 2: no extra sampling units**
   + select minimum 40 sampling units for each subtype (select extra sampling units if needed)
   + finite population correction
   + distribute sample size over different area classes dividing the sample size equally over the three area classes
@@ -387,7 +387,7 @@ samplesize_alt_total %>%
   filter(!(version == "watersurfaces_hab_2021" & scenario == "original")) %>%
   select(-version) %>%
   rename("$n_{fl}$" = n_fl, "$n_{sac}$" = "n_sac", "$n_{subtype}$" = "n_subtype" ) %>%
-  kable(caption = "Alternative sample size scenarios compared the to original design: total number of sampling units and total number of water surfaces",
+  kable(caption = "Alternative sample size scenarios compared to the original design: total number of sampling units and total number of water surfaces",
         booktabs = TRUE,
         escape = FALSE, 
         format = format_table) %>%
@@ -410,7 +410,7 @@ samplesize_alt_overview %>%
   arrange(type, scenario) %>%
   select(-version, -n_fl, -n_sac, -n_subtype) %>%
   mutate(sac = ifelse(sac, "inside", "outside")) %>%
-  kable(caption = "Alternative sample size scenarios compared the to original design: number of sampling units per type and total number of water surfaces per type",
+  kable(caption = "Alternative sample size scenarios compared to the original design: number of sampling units per type and total number of water surfaces per type",
         booktabs = TRUE, 
         format = format_table) %>%
   kable_styling() %>%
@@ -454,6 +454,7 @@ total %>%
            
   
 ```
+
 The first monitoring cycle will be finished in 2022 and the new monitoring design will be implemented in the second monitoring cycle starting from 2023. 
 
 ## Sampling process
