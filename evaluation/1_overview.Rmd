@@ -17,7 +17,7 @@ Each of these criteria is evaluated according to the evaluation matrix specified
 The conservation status of **specific structure and functions (including typical species)** is assessed as follows:
 
 -   **Favourable**: structures and functions (including typical species) in good condition and no significant deteriorations / pressures
--   **Unfavourable - Bad**: more than 25% of the area is unfavourable as regards its specific structures and functions (including typical species)
+-   **Unfavourable -- Bad**: more than 25% of the area is unfavourable as regards its specific structures and functions (including typical species)
 -   **Unfavourable -- Inadequate**: any other combination
 -   **Unknown**: no or insufficient reliable information available
 
@@ -45,13 +45,47 @@ In Flanders 46 habitat types occur and several of these habitat types are subdiv
 
 Based on the information needs we can summarize the main targets of MHQ as follows:
 
-+ the habitat quality status per habitat type and per habitat subtype for Flanders and for the network of SAC
++ the habitat quality **status** per habitat type and per habitat subtype for Flanders and for the network of SAC
   + What is the percentage of the habitat area that is in good/not-good condition^[We use the term 'not-good condition' as this is also used in the Article 17 reporting forms.]?
   + Is the percentage of habitat in not-good condition higher or lower than 25%?
   
-+ the habitat quality short-term (12 years) and long-term (24 years) trend per habitat type and per habitat subtype for Flanders and for the network of SAC
++ the habitat quality short-term (12 years) and long-term (24 years) **trend** per habitat type and per habitat subtype for Flanders and for the network of SAC
   + What is the trend of the habitat area in good/not-good condition?
   + Is the habitat quality stable, improving or deteriorating?
+
+  
+```{r}
+
+plot_status <- tibble(prop_slecht = c(0.15, 0.27,0.55),
+       status = c("Favourable", "Unknown", "Unfavourable")) %>%
+  mutate(n = 80,
+         se = sqrt(prop_slecht * (1 - prop_slecht) / n),
+         prop_slecht_lci = prop_slecht -  se * 1.96,
+         prop_slecht_uci = prop_slecht +  se * 1.96) %>%
+  ggplot( aes(x = status, y = prop_slecht, ymin = prop_slecht_lci, ymax = prop_slecht_uci, colour = status)) +
+  geom_hline(yintercept = 0.25, linetype = 2,  alpha = 0.5) +
+  geom_point(alpha = 0.8, size = 2) +
+  geom_errorbar(width = 0.2) +
+  labs(x = "Status category", y = "Habitat proportion in not-good condition", colour = "Conclusion") +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1), breaks = c(0, 0.25, 0.50, 0.75, 100)) +
+  scale_colour_manual(values = c("Favourable" = inbo_groen, "Unfavourable" = inbo_rood, "Unknown" = inbo_grijs)) +
+  theme(legend.position = "hide")
+
+plot_trend <- tibble(trend = c(-0.45, 0.05, -0.09, 0.33),
+                     ci = c(0.25, 0.1, 0.35, 0.2),
+                     trend_class = c("Deteriorating", "Stable", "Unknown", "Increasing")) %>%
+  mutate(trend_lcl = trend - ci,
+         trend_ucl = trend + ci) %>%
+  ggplot(aes(x = trend_class, y = trend, ymin = trend_lcl, ymax = trend_ucl, colour = trend_class)) +
+    geom_point(alpha = 0.8, size = 2) +
+    geom_errorbar(width = 0.2) +
+    geom_hline(yintercept = c(-0.25, 0, 0.25), linetype = 2) +
+    labs(x = "Trend category", y = "Change in habitat proportion in not-good condition", colour = "Conclusion") +
+    scale_y_continuous( breaks = c( -0.25, 0, 0.25), labels = c("Lower threshold \n(to be defined)", "Reference \n(0 % change)", "Upper threshold \n(to be defined)")) +
+    scale_colour_manual(values = c("Increasing" = inbo_groen, "Deteriorating" = inbo_rood, "Unknown" = inbo_grijs, "Stable" = inbo_groen)) +
+    theme(legend.position = "hide")
+```
+
 
 The original design of MHQ [@westra2014] was mainly based on the target for the status of habitat quality. In this report we will evaluate how the design can be modified to better meet the monitoring target for the trend in habitat quality. We will evaluate different scenarios based on sample size calculations for status and trend in habitat quality. But first we summarize how habitat quality is defined and what needs to be measured in the field.
 

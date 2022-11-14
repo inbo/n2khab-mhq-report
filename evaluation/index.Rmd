@@ -169,7 +169,8 @@ if (interactive()) {
 }
 
 doc.type <- knitr::opts_knit$get('rmarkdown.pandoc.to')
+doc.type <- "html"
 format_table <- ifelse(doc.type == "docx", "simple", doc.type)
 
-doc.type <- "html"
+
 ```
