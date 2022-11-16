@@ -23,7 +23,7 @@ The conservation status of **specific structure and functions (including typical
 
 The guidelines [@dgenvironment2017] stress the importance of trend information, as trends are decisive for the assessment of conservation status since usually only stable or positive trends can result in an overall favourable conservation status (FCS) conclusion. It is advised that more attention should be paid to the methodology of monitoring schemes to improve the quality of trend information. A short-term trend is considered as the trend over two reporting cycles (12 years). The recommended period for assessing longer-term trends is four reporting cycles (24 years).
 
-## Regional level
+## Regional level {#regional}
 
 Flanders represents the northern part of Belgium and is almost entirely situated within the Atlantic biogeographical region, with the exception of Voeren in the easternmost part, which belongs to the Continental biogeographical region. INBO is responsible for the assessment of the conservation status (CS) of habitat types in Flanders. The results for Flanders are integrated with the results of the Walloon and Brussels Capital region to assess the CS of habitat types on the scale of Belgium per biogeographical region. This integrated assessment is reported to the European Commission.
 
@@ -46,15 +46,17 @@ In Flanders 46 habitat types occur and several of these habitat types are subdiv
 Based on the information needs we can summarize the main targets of MHQ as follows:
 
 + the habitat quality **status** per habitat type and per habitat subtype for Flanders and for the network of SAC
-  + What is the percentage of the habitat area that is in good/not-good condition^[We use the term 'not-good condition' as this is also used in the Article 17 reporting forms.]?
-  + Is the percentage of habitat in not-good condition higher or lower than 25%?
+  + What is the proportion of the habitat area that is in good/bad condition^[In the Article 17 reporting forms 'not-good condition' is used instead of 'bad condition'.]?
+  + Is the proportion of habitat in bad condition higher or lower than 25%?
   
 + the habitat quality short-term (12 years) and long-term (24 years) **trend** per habitat type and per habitat subtype for Flanders and for the network of SAC
-  + What is the trend of the habitat area in good/not-good condition?
+  + What is the trend of the proportion of the habitat area in good/bad condition?
   + Is the habitat quality stable, improving or deteriorating?
 
+Figure \@ref(fig:figstatustrend) shows the different conclusions that can be drawn based on the estimates (and the confidence interval) for habitat quality status and trend. Note that the habitat quality status is unknown when the confidence interval includes the 25% threshold. Also note that we need to define an upper and a lower threshold for the habitat quality trend to differentiate between a stable and an unknown trend. The confidence interval includes 0% change when the trend is stable or unknown. However when the confidence interval is very wide we have no idea whether there is an increase or a decrease in habitat quality and the therefore the trend is unknown.    
   
-```{r}
+  
+```{r figstatustrend, fig.cap= "Possible coclusions for habitat quality status and habitat quality trend"}
 
 plot_status <- tibble(prop_slecht = c(0.15, 0.27,0.55),
        status = c("Favourable", "Unknown", "Unfavourable")) %>%
@@ -66,29 +68,32 @@ plot_status <- tibble(prop_slecht = c(0.15, 0.27,0.55),
   geom_hline(yintercept = 0.25, linetype = 2,  alpha = 0.5) +
   geom_point(alpha = 0.8, size = 2) +
   geom_errorbar(width = 0.2) +
-  labs(x = "Status category", y = "Habitat proportion in not-good condition", colour = "Conclusion") +
+  labs(x = "Habitat quality status", y = "Habitat proportion in bad condition", colour = "Conclusion") +
   scale_y_continuous(labels = scales::percent, limits = c(0, 1), breaks = c(0, 0.25, 0.50, 0.75, 100)) +
   scale_colour_manual(values = c("Favourable" = inbo_groen, "Unfavourable" = inbo_rood, "Unknown" = inbo_grijs)) +
   theme(legend.position = "hide")
 
-plot_trend <- tibble(trend = c(-0.45, 0.05, -0.09, 0.33),
-                     ci = c(0.25, 0.1, 0.35, 0.2),
+plot_trend <- tibble(trend = c(-0.20, -0.06, 0.03, 0.26),
+                     ci = c(0.14, 0.14, 0.38, 0.14),
                      trend_class = c("Deteriorating", "Stable", "Unknown", "Increasing")) %>%
   mutate(trend_lcl = trend - ci,
          trend_ucl = trend + ci) %>%
   ggplot(aes(x = trend_class, y = trend, ymin = trend_lcl, ymax = trend_ucl, colour = trend_class)) +
     geom_point(alpha = 0.8, size = 2) +
     geom_errorbar(width = 0.2) +
-    geom_hline(yintercept = c(-0.25, 0, 0.25), linetype = 2) +
-    labs(x = "Trend category", y = "Change in habitat proportion in not-good condition", colour = "Conclusion") +
-    scale_y_continuous( breaks = c( -0.25, 0, 0.25), labels = c("Lower threshold \n(to be defined)", "Reference \n(0 % change)", "Upper threshold \n(to be defined)")) +
+    geom_hline(yintercept = c(-0.25, 0, 0.25), linetype = c(3, 2, 3)) +  
+    labs(x = "Habitat quality trend", y = "Change in habitat proportion in bad condition", colour = "Conclusion") +
+    scale_y_continuous( breaks = c( -0.25, 0, 0.25), labels = c("Lower threshold \n(x % decrease)", "Reference \n(0 % change)", "Upper threshold \n(x % increase)")) +
     scale_colour_manual(values = c("Increasing" = inbo_groen, "Deteriorating" = inbo_rood, "Unknown" = inbo_grijs, "Stable" = inbo_groen)) +
     theme(legend.position = "hide")
+
+grid.arrange(plot_status, plot_trend, ncol = 2, widths = c(4.5, 6))
+
+
 ```
+We want to emphasize the difference between the conservation status of structure and functions and the habitat quality status. The habitat quality status is the estimated proportion of habitat area in good/bad condition for a certain period in time. As explained in section \@ref(regional), the conservation status of structure and functions is an evaluation based on habitat quality status, habitat quality trend, habitat typical species, ecological coherence and pressures. MHQ only provide information on habitat quality status and trend and not on habitat typical species, ecological coherence and pressures.   
 
-
-The original design of MHQ [@westra2014] was mainly based on the target for the status of habitat quality. In this report we will evaluate how the design can be modified to better meet the monitoring target for the trend in habitat quality. We will evaluate different scenarios based on sample size calculations for status and trend in habitat quality. But first we summarize how habitat quality is defined and what needs to be measured in the field.
-
+The original design of MHQ [@westra2014] was mainly based on the target for the habitat quality status. In this report we will evaluate how the design can be modified to better meet the monitoring target for the trend in habitat quality. We will evaluate different scenarios based on sample size calculations for status and trend in habitat quality. But first we summarize how habitat quality is defined and what needs to be measured in the field.
 
 ## Biotic habitat quality indicators
 

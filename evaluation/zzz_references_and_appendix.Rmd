@@ -36,6 +36,38 @@ table_types %>%
   
 ```
 
+# Power calculations using the `simr` package {#annexsimr}
+
+## Methdodolgy
+
+In a first step we use existing data from the Flemish Forest Inventory to fit a generalized linear mixed models, with plot as random effect to specify that the observations are paired. Next, model assumptions can be verified using the function `plotQQunif` of the `DHARMa` package [@hartig2022].  
+
+## Trend in proportion of favourable indicators for habitat type 9120
+
+The following R code models the proportion of favourable indicators (prop_favourable) for the different Forest Inventory periods using plot as a random effect:
+
+`model_9120 <- lmer(formula = prop_favourable ~ period + (1|plot), data = data_forest_paired)`
+
+The model assumptions are quite OK as can be seen in the figure below.
+
+```{r}
+plotQQunif(model_9120)
+```
+Table \@ref(tab:tabcompsimr1)
+
+```{r tabcompsimr1}
+
+compare_power_aandeel_gunstig_9210 %>%
+  mutate(ci = str_c("[", round(lcl, 2), " - ", round(ucl, 2), "]")) %>%
+  select("sample size" = n, "detectable effect size (paired t-test)" = effect_size, "power (simr)" = power_simr, "95\\% confidence interval" = ci) %>%
+  kable(caption = "Estimated power based on simr package and 95\\% confidence interval", 
+        digits = 2) %>%
+  kable_styling()
+```
+
+
+
+
 # Habitat types and subtypes included in MHQ {#annex2} 
 
 Table \@ref(tab:tabschemes) gives an overview of the habitat types for which a habitat quality monitoring scheme was developed. The table also provides the reason why a monitoring scheme was not considered the most appropriate approach for several habitat types. Terrestrial habitat types are considered very rare when the area is lower than 10 ha or when the habitat type occurs on less than 15 locations. The area and the number of locations was derived from the 2020 version of the Natura 2000 Habitat map [@inbo2020].   

@@ -143,6 +143,7 @@ library(units)
 library(git2rdata)
 library(simr)
 library(DHARMa)
+library(gridExtra)
 
 options(knitr.kable.NA = '')
 options(dplyr.summarise.inform = FALSE)
@@ -169,7 +170,7 @@ if (interactive()) {
 }
 
 doc.type <- knitr::opts_knit$get('rmarkdown.pandoc.to')
-doc.type <- "html"
+#doc.type <- "html"
 format_table <- ifelse(doc.type == "docx", "simple", doc.type)
 
 

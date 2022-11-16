@@ -3,7 +3,7 @@
 
 Sample size calculations provide an insight in the relationship between sample size and the minimal detectable effect size for a given significance level $\alpha$ and power $\pi$. $\alpha$ is the probability of a type I error, i.e. the probability of concluding that there is an effect based on a sample, when in reality there is no effect in the population. $\pi$ is the probability to detect an effect based on a sample, when the effect also exists in reality.
 
-The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@westra2014]. We will first reproduce the sample size calculations by @westra2014. Next we will also perform a sample size calculation for the trend in habitat quality.
+The original sample size of the monitoring scheme is based on sample size calculations for the status of the habitat quality [@onkelinx2007, @westra2014]. We will first reproduce the sample size calculations by @onkelinx2007 Next we will also perform a sample size calculation for the trend in habitat quality.
 
 As in @westra2014, we will choose a power $\pi$ of 0.80 and a significance level $\alpha$ of 0.05.    
 
@@ -360,9 +360,11 @@ sim_data <- expand.grid(n = 20:400,
   mutate(mean_difference = d * sd_difference)
 ```
 
-#### Sample size calculation for continuous variables
-
 For the exploration of the detectable effect size as a function of the sample size, we assume continuous variables with a normal distribution. This enables a straightforward power analysis based on the paired t-test using the `pwr.t.test` of the pwr package [@champely2020]. Although not all habitat quality indicators will have normally distributed paired differences, we believe that this method will give us a general idea on the relationship between detectable effect size and sample size.
+
+We will verify some of the results of the paired t-test, by applying a more advanced method to calculate the power using the R package `simr` [@green2016]. The advantage of this method is that we can make use of other distributions, such as the poisson distribution and the binomial distribution. More details are provided in Appendix \@ref(annexsimr)  .    
+
+#### Sample size calculation for continuous variables based on the paired t-test
 
 When applying the paired t-test, the detectable effect size ($d$) equals the mean of the differences between paired observations divided by the standard deviation of the differences. Figure \@ref(fig:fig-verschil-cont) and Table \@ref(tab:powerd) show the detectable effect size as a function of the sample size.
 
@@ -510,7 +512,7 @@ verschil_aandeel_gunstig %>%
   column_spec(4, width = "2.5cm")
 
 ```
-Table \@ref(tab:tabdiffdetect1) shows the range of the minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes. This is based on the range of values for the standard deviation of differences as shown in Table \@ref(tab:tabmeandif).    
+Table \@ref(tab:tabdiffdetect1) shows the range of the minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes with a power $\pi$ of 0.80. This is based on the range of values for the standard deviation of differences as shown in Table \@ref(tab:tabmeandif).    
 
 ```{r diffdetect1}
 
@@ -542,7 +544,7 @@ verschil_aandeel_gunstig_9210_detecteerbaar <- sim_data %>%
 ```{r tabdiffdetect1}
 verschil_aandeel_gunstig_detecteerbaar %>%
   select( "sd difference" = sd_diff_range, "sample size" = n, d, "detectable difference" = mean_diff_range) %>%
-  kable(caption = "Minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes",
+  kable(caption = "Minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes with a power $\pi$ of 0.80",
         booktabs = TRUE, 
         format = format_table) %>%
   kable_styling() %>%
@@ -556,7 +558,7 @@ calc_power_simr <- function(model, sim_n, sim_effect) {
   
   fixef(model)["periodeperiode2"] <- sim_effect
   model_sim <- extend(model, along = "id_group", n = sim_n)
-  sim <- powerSim(model_sim, nsim = 250)
+  sim <- powerSim(model_sim, nsim = 100)
   
   summary <- summary(sim)
   
@@ -587,7 +589,6 @@ calc_power_simr_df <- function(model, df) {
   
 }
 
-set.seed(675)
 
 data_bos_paired <- data_bos %>%
   filter(paired) %>%
@@ -597,14 +598,30 @@ data_bos_paired <- data_bos %>%
 model_9120 <- lmer(formula = aandeel_gunstig ~ periode + (1|id_group),
               data = data_bos_paired)
 
+```
+
+```{r, eval= FALSE}
+
 verschil_aandeel_gunstig_9210_detecteerbaar <- verschil_aandeel_gunstig_9210_detecteerbaar %>%
   mutate(effect = mean_diff/100)
 
-verschil_aandeel_gunstig_9210_simr <- calc_power_simr_df(model_9120, verschil_aandeel_gunstig_9210_detecteerbaar)
+set.seed(675)
+
+verschil_aandeel_gunstig_9210_simr <- calc_power_simr_df(model_9120, verschil_aandeel_gunstig_9210_detecteerbaar) 
+
+write_csv2(verschil_aandeel_gunstig_9210_simr, "../output/verschil_aandeel_gunstig_9210_simr.csv")
 ```
 
 
+```{r}
+verschil_aandeel_gunstig_9210_simr <- read_csv2("../output/verschil_aandeel_gunstig_9210_simr.csv")
 
+compare_power_aandeel_gunstig_9210 <- verschil_aandeel_gunstig_9210_simr %>%
+  bind_cols(select(verschil_aandeel_gunstig_9210_detecteerbaar, mean_diff)) %>%
+  select(n, effect_size = mean_diff, power_simr = power, lcl, ucl)
+```
+
+To verify the results we calculated the power for habitat type 9120 using the `simr` package. The power is close to 0.8 for all combinations of sample size and effect size in Table \@ref(tab:tabdiffdetect1). So both methods give similar results. The estimated power using `simr` is shown in Table \@ref(tab:) in Appendix \@ref(annexsimr).     
 
 \needspace{50mm}
 
@@ -743,24 +760,24 @@ verschil_voorwaarden_detecteerbaar <- sim_data %>%
 
 ```{r tabdiffdetect3}
 
-voorwaarden_mean_p1 <- voorwaarden_bos_select %>%
+voorwaarde_9120_mean_period <- voorwaarden_bos_select %>%
+  filter(type == "9120") %>%
   group_by(voorwaarde_engels) %>%
   summarise(mean_p1 = mean(periode1),
             mean_p2 = mean(periode2)) %>%
   ungroup()
 
-
-verschil_voorwaarden_91xx <- verschil_voorwaarden %>%
-  filter(type == "91xx") %>%
+verschil_voorwaarden_9120 <- verschil_voorwaarden %>%
+  filter(type == "9120") %>%
   tidyr::expand(nesting(voorwaarde_engels, sd_diff), n = c(40, 80, 170))
   
-verschil_voorwaarden_detecteerbaar_91xx <- sim_data %>%
+verschil_voorwaarden_detecteerbaar_9120 <- sim_data %>%
   filter(n %in% c(40, 80, 170)) %>%
   mutate(d = round(d, 2)) %>%
   filter(alpha == 0.05) %>%
   distinct(n, d) %>%
-  left_join(verschil_voorwaarden_91xx, by = "n") %>%
-  left_join(voorwaarden_mean_p1, by = "voorwaarde_engels") %>%
+  left_join(verschil_voorwaarden_9120, by = "n") %>%
+  left_join(voorwaarde_9120_mean_period, by = "voorwaarde_engels") %>%
   mutate(mean_diff_detect = d * sd_diff,
          log_effect = log(mean_diff_detect + mean_p1) - log(mean_p1)) 
 
@@ -787,8 +804,8 @@ verschil_voorwaarden_detecteerbaar %>%
 ```
 
 ```{r}
-n_keyspecies_91xx <- voorwaarden_bos_select %>%
- # filter(type == "9120") %>%
+n_keyspecies_9120 <- voorwaarden_bos_select %>%
+  filter(type == "9120") %>%
   filter(voorwaarde == "aantal sleutelsoorten kruidlaag") %>%
   select(-verschil_voorwaarde) %>%
   pivot_longer(cols = c("periode1", "periode2"), names_to = "periode", values_to = "n") %>%
@@ -797,11 +814,11 @@ n_keyspecies_91xx <- voorwaarden_bos_select %>%
   mutate(id = str_c(plot_id, "_", periode_n)) %>%
   left_join(select(data_bos_paired, id, id_group), by = "id")
 
-model_ks_91xx_poisson <- glmer(formula = n ~ periode + (1|id_group),
-              data = n_keyspecies_91xx,
+model_ks_9120_poisson <- glmer(formula = n ~ periode + (1|id_group),
+              data = n_keyspecies_9120,
               family = "poisson")
 
-model_ks_91xx_poisson_summary <- summary(model_ks_9120_poisson)
+model_ks_9120_poisson_s <- summary(model_ks_9120_poisson)
 
 plotQQunif(model_ks_9120_poisson)
 
@@ -810,22 +827,16 @@ N <- nrow(n_keyspecies_9120)
 p <- length(fixef(model_ks_9120_poisson)) + 1
 overdispersion <- sum(E1^2) / (N - p)
 
-verschil_keyspecies_detecteerbaar_91xx <- verschil_voorwaarden_detecteerbaar_91xx %>%
+verschil_keyspecies_detecteerbaar_9120 <- verschil_voorwaarden_detecteerbaar_9120 %>%
   filter(voorwaarde_engels == "number of key species in the herb layer") %>%
   mutate(effect = log_effect)
 
-
-
-
-verschil_keyspecies_simr <- calc_power_simr_df(model_ks_9120_poisson, verschil_keyspecies_detecteerbaar_91xx)
-
+verschil_keyspecies_simr <- calc_power_simr_df(model_ks_9120_poisson, verschil_keyspecies_detecteerbaar_9120)
 
 data_simr <- tibble(n = c(40, 80, 170)) %>%
-  tidyr::expand( n, nspecies_p1 = c(2, 3, 5), increase = seq(0.1, 0.4, by = 0.05)) %>%
+  tidyr::expand( n, nspecies_p1 = c(2, 3, 5), increase = seq(0.2, 0.5, by = 0.05)) %>%
   mutate(nspecies_p2 = nspecies_p1 + increase*nspecies_p1,
          effect = log(nspecies_p2) - log(nspecies_p1))
-
-check <- calc_power_simr(model_ks_9120_poisson, sim_n = 40, sim_effect = -0.1)
 
 simr_result <- calc_power_simr_df(model_ks_9120_poisson, df = data_simr)
 
@@ -853,7 +864,7 @@ simr_result2 %>%
 ```{r}
 simr_select_results <- simr_result2 %>%
   filter(nspecies_p1 == 3) %>%
-  filter(lcl >= 0.8) %>%
+  filter(power >= 0.75) %>%
   group_by(n) %>%
   slice_min(lcl, n = 1) %>%
   ungroup()
@@ -863,41 +874,32 @@ simr_select_results <- simr_result2 %>%
 
 
 
-```{r}
-encroachement_91xx <- voorwaarden_bos_select %>%
- # filter(type == "9120") %>%
+```{r, eval = FALSE}
+
+encroachement_9120 <- voorwaarden_bos_select %>%
+  filter(type == "9120") %>%
   filter(voorwaarde == "bedekking verruiging totaal") %>%
   select(-verschil_voorwaarde) %>%
   pivot_longer(cols = c("periode1", "periode2"), names_to = "periode", values_to = "cover") %>%
   mutate(periode_n = str_remove(periode, "periode"),
-         periode = factor(periode)) %>%
+         periode = factor(periode),
+         cover_adj = ifelse(cover == 0, 0.001, cover/100),
+         cover_scale = qlogis(cover_adj)) %>%
   mutate(id = str_c(plot_id, "_", periode_n)) %>%
   left_join(select(data_bos_paired, id, id_group), by = "id")
 
-encroachement_91xx %>%
-  ggplot(aes(x = cover, fill = periode)) +
-  geom_density()
+model_encroachement_9120 <- lmer(formula = cover_scale ~ periode + (1|id_group),
+              data = encroachement_9120)
 
+model_encroachement_9120_summary <- summary(model_encroachement_9120)
 
-model_encroachement_91xx <- lmer(formula = cover ~ periode + (1|id_group),
-              data = encroachement_91xx)
+plotQQunif(model_encroachement_9120)
 
-model_encroachement_91xx_summary <- summary(model_encroachement_91xx)
+verschil_encroachment_detecteerbaar_9120 <- verschil_voorwaarden_detecteerbaar_9120 %>%
+  filter(voorwaarde_engels == "total cover of encroachment species") %>%
+  mutate (effect = qlogis(mean_p1/100 + mean_diff_detect/100) - qlogis(mean_p1/100))
 
-plotQQunif(model_encroachement_91xx)
-
-E1 <- resid(model_ks_9120_poisson, type = "pearson")
-N <- nrow(n_keyspecies_9120)
-p <- length(fixef(model_ks_9120_poisson)) + 1
-overdispersion <- sum(E1^2) / (N - p)
-
-verschil_keyspecies_detecteerbaar_91xx <- verschil_voorwaarden_detecteerbaar_91xx %>%
-  filter(voorwaarde_engels == "total cover of encroachment species")
-
-
-
-
-verschil_keyspecies_simr <- calc_power_simr_df(model_ks_9120_poisson, verschil_keyspecies_detecteerbaar_91xx)
+verschil_keyspecies_simr <- calc_power_simr_df(model_encroachement_9120, verschil_encroachment_detecteerbaar_9120)
 
 
 data_simr <- tibble(n = c(40, 80, 170)) %>%
