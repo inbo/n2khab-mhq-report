@@ -30,7 +30,7 @@ map_3260 <- map_3260_original %>%
   group_by(OBJECTID) %>%
   mutate(length_3260 = drop_units(st_length(geometry))) %>%
   ungroup() %>%
-  dplyr::select(name = naam, wl_code = WLcode, catchment_area = SGO__km._, sac = SBZ, province = provincie, length_3260) %>%
+  dplyr::select(name = naam, wl_code = WLcode, catchment_area = `SGO__km²_`, sac = SBZ, province = provincie, length_3260) %>%
   mutate(sac = ifelse(sac %in% c("intersect SBZ", "sa"), "intersecting or downstream",
                       ifelse(sac == "buiten", "outside", NA)),
          catchment_area = ifelse(catchment_area %in% c("10-50", ">50"), "> 10 km²",

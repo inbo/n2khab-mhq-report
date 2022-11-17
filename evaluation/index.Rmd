@@ -127,10 +127,10 @@ library(knitr)
 opts_chunk$set(
   echo = FALSE,
   eval = TRUE,
-  cache = FALSE,
+  cache = TRUE,
   warning = FALSE,
   error = FALSE,
-  message = TRUE
+  message = FALSE
 )
 library(tidyverse)
 library(INBOtheme)

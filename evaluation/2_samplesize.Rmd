@@ -543,8 +543,8 @@ verschil_aandeel_gunstig_9210_detecteerbaar <- sim_data %>%
 
 ```{r tabdiffdetect1}
 verschil_aandeel_gunstig_detecteerbaar %>%
-  select( "sd difference" = sd_diff_range, "sample size" = n, d, "detectable difference" = mean_diff_range) %>%
-  kable(caption = "Minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes with a power $\pi$ of 0.80",
+  select( "sd difference" = sd_diff_range, "sample size" = n, d, "detectable difference (\\%)" = mean_diff_range) %>%
+  kable(caption = "Minimum detectable difference in proportion of favourable indicators that can be expected for different sample sizes with a power $pi$ of 0.80",
         booktabs = TRUE, 
         format = format_table) %>%
   kable_styling() %>%
@@ -558,7 +558,7 @@ calc_power_simr <- function(model, sim_n, sim_effect) {
   
   fixef(model)["periodeperiode2"] <- sim_effect
   model_sim <- extend(model, along = "id_group", n = sim_n)
-  sim <- powerSim(model_sim, nsim = 100)
+  sim <- powerSim(model_sim, nsim = 250)
   
   summary <- summary(sim)
   
@@ -613,7 +613,7 @@ write_csv2(verschil_aandeel_gunstig_9210_simr, "../output/verschil_aandeel_gunst
 ```
 
 
-```{r}
+```{r, cache = FALSE}
 verschil_aandeel_gunstig_9210_simr <- read_csv2("../output/verschil_aandeel_gunstig_9210_simr.csv")
 
 compare_power_aandeel_gunstig_9210 <- verschil_aandeel_gunstig_9210_simr %>%
@@ -621,7 +621,7 @@ compare_power_aandeel_gunstig_9210 <- verschil_aandeel_gunstig_9210_simr %>%
   select(n, effect_size = mean_diff, power_simr = power, lcl, ucl)
 ```
 
-To verify the results we calculated the power for habitat type 9120 using the `simr` package. The power is close to 0.8 for all combinations of sample size and effect size in Table \@ref(tab:tabdiffdetect1). So both methods give similar results. The estimated power using `simr` is shown in Table \@ref(tab:) in Appendix \@ref(annexsimr).     
+To verify the results we calculated the power for habitat type 9120 using the `simr` package. The power is close to 0.8 for all combinations of sample size and effect size, confirming the results in Table \@ref(tab:tabdiffdetect1). The estimated power using `simr` is shown in Table \@ref(tab:tabcompsimr1) in Appendix \@ref(annexsimr).     
 
 \needspace{50mm}
 
@@ -783,8 +783,6 @@ verschil_voorwaarden_detecteerbaar_9120 <- sim_data %>%
 
 ```
 
-
-
 \needspace{200mm}
 
 Table \@ref(tab:tabmind) shows the range of  the detectable mean difference for the habitat quality indicators that can be expected for different sample sizes. It is based on the range of observed values for the standard deviation of the indicators as shown in Table \@ref(tab:tabindicatoren).     
@@ -818,25 +816,20 @@ model_ks_9120_poisson <- glmer(formula = n ~ periode + (1|id_group),
               data = n_keyspecies_9120,
               family = "poisson")
 
-model_ks_9120_poisson_s <- summary(model_ks_9120_poisson)
-
-plotQQunif(model_ks_9120_poisson)
-
-E1 <- resid(model_ks_9120_poisson, type = "pearson")
-N <- nrow(n_keyspecies_9120)
-p <- length(fixef(model_ks_9120_poisson)) + 1
-overdispersion <- sum(E1^2) / (N - p)
-
 verschil_keyspecies_detecteerbaar_9120 <- verschil_voorwaarden_detecteerbaar_9120 %>%
   filter(voorwaarde_engels == "number of key species in the herb layer") %>%
   mutate(effect = log_effect)
-
-verschil_keyspecies_simr <- calc_power_simr_df(model_ks_9120_poisson, verschil_keyspecies_detecteerbaar_9120)
 
 data_simr <- tibble(n = c(40, 80, 170)) %>%
   tidyr::expand( n, nspecies_p1 = c(2, 3, 5), increase = seq(0.2, 0.5, by = 0.05)) %>%
   mutate(nspecies_p2 = nspecies_p1 + increase*nspecies_p1,
          effect = log(nspecies_p2) - log(nspecies_p1))
+```
+
+```{r, eval = FALSE}
+verschil_keyspecies_simr <- calc_power_simr_df(model_ks_9120_poisson, verschil_keyspecies_detecteerbaar_9120)
+
+write_csv2(verschil_keyspecies_simr, "../output/verschil_keyspecies_simr")
 
 simr_result <- calc_power_simr_df(model_ks_9120_poisson, df = data_simr)
 
@@ -844,12 +837,20 @@ simr_result2 <- simr_result %>%
   bind_cols(select(data_simr, nspecies_p1, nspecies_p2, increase))
 
 write_csv2(simr_result2, "../output/simulation_nspecies.csv")
-
 ```
 
-
-
 ```{r}
+verschil_keyspecies_simr <- read_csv2("../output/verschil_keyspecies_simr")
+
+compare_power_keyspecies_9210 <- verschil_keyspecies_simr %>%
+  bind_cols(select(verschil_keyspecies_detecteerbaar_9120, mean_diff_detect)) %>%
+  select(n, effect_size = mean_diff_detect, power_simr = power, lcl, ucl)
+```
+
+```{r, eval = FALSE}
+
+simr_result2 <- read_csv2("../output/simulation_nspecies.csv")
+
 simr_result2 %>%
   ggplot(aes(y = power, ymin = lcl, ymax = ucl, x = factor(n), group = factor(increase), colour = factor(increase))) +
   geom_point() +
@@ -861,20 +862,9 @@ simr_result2 %>%
 ```
 
 
+
+
 ```{r}
-simr_select_results <- simr_result2 %>%
-  filter(nspecies_p1 == 3) %>%
-  filter(power >= 0.75) %>%
-  group_by(n) %>%
-  slice_min(lcl, n = 1) %>%
-  ungroup()
-```
-
-
-
-
-
-```{r, eval = FALSE}
 
 encroachement_9120 <- voorwaarden_bos_select %>%
   filter(type == "9120") %>%
@@ -893,13 +883,10 @@ model_encroachement_9120 <- lmer(formula = cover_scale ~ periode + (1|id_group),
 
 model_encroachement_9120_summary <- summary(model_encroachement_9120)
 
-plotQQunif(model_encroachement_9120)
 
 verschil_encroachment_detecteerbaar_9120 <- verschil_voorwaarden_detecteerbaar_9120 %>%
   filter(voorwaarde_engels == "total cover of encroachment species") %>%
   mutate (effect = qlogis(mean_p1/100 + mean_diff_detect/100) - qlogis(mean_p1/100))
-
-verschil_keyspecies_simr <- calc_power_simr_df(model_encroachement_9120, verschil_encroachment_detecteerbaar_9120)
 
 
 data_simr <- tibble(n = c(40, 80, 170)) %>%
@@ -907,13 +894,23 @@ data_simr <- tibble(n = c(40, 80, 170)) %>%
   mutate(nspecies_p2 = nspecies_p1 + increase*nspecies_p1,
          effect = log(nspecies_p2) - log(nspecies_p1))
 
-check <- calc_power_simr(model_ks_9120_poisson, sim_n = 40, sim_effect = -0.1)
-
-simr_result <- calc_power_simr_df(model_ks_9120_poisson, df = data_simr)
-
-simr_result2 <- simr_result %>%
-  bind_cols(select(data_simr, nspecies_p1, nspecies_p2, increase))
-
-write_csv2(simr_result2, "../output/simulation_nspecies.csv")
-
 ```
+
+
+```{r, eval = FALSE}
+
+verschil_encroachment_simr <- calc_power_simr_df(model_encroachement_9120, verschil_encroachment_detecteerbaar_9120)
+
+write_csv2(verschil_encroachment_simr, "../output/verschil_encroachment_simr.csv")
+```
+
+```{r}
+
+verschil_encroachment_simr <- read_csv2("../output/verschil_encroachment_simr.csv")
+
+compare_power_encroachment_9210 <- verschil_encroachment_simr %>%
+  bind_cols(select(verschil_encroachment_detecteerbaar_9120, mean_diff_detect)) %>%
+  select(n, effect_size = mean_diff_detect, power_simr = power, lcl, ucl)
+```
+
+

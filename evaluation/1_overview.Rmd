@@ -56,7 +56,7 @@ Based on the information needs we can summarize the main targets of MHQ as follo
 Figure \@ref(fig:figstatustrend) shows the different conclusions that can be drawn based on the estimates (and the confidence interval) for habitat quality status and trend. Note that the habitat quality status is unknown when the confidence interval includes the 25% threshold. Also note that we need to define an upper and a lower threshold for the habitat quality trend to differentiate between a stable and an unknown trend. The confidence interval includes 0% change when the trend is stable or unknown. However when the confidence interval is very wide we have no idea whether there is an increase or a decrease in habitat quality and the therefore the trend is unknown.    
   
   
-```{r figstatustrend, fig.cap= "Possible coclusions for habitat quality status and habitat quality trend"}
+```{r figstatustrend, fig.cap= "Possible coclusions for habitat quality status and habitat quality trend", fig.width= 8}
 
 plot_status <- tibble(prop_slecht = c(0.15, 0.27,0.55),
        status = c("Favourable", "Unknown", "Unfavourable")) %>%
