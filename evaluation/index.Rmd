@@ -127,7 +127,7 @@ library(knitr)
 opts_chunk$set(
   echo = FALSE,
   eval = TRUE,
-  cache = TRUE,
+  cache = FALSE,
   warning = FALSE,
   error = FALSE,
   message = FALSE

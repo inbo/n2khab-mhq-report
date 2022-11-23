@@ -29,7 +29,7 @@ Flanders represents the northern part of Belgium and is almost entirely situated
 
 The methodology used by INBO to evaluate the CS of the criterion specific structure and functions (including typical species) is based on the general guidelines by @dgenvironment2017 and is described in more detail by @paelinckx2019. It requires information per habitat type on:
 
--   the fraction of the habitat area in good condition (as assessed following the criteria and indicators by @oosterlynck2020) and its trend
+-   the proportion of the habitat area in good condition (as assessed following the criteria and indicators by @oosterlynck2020) and its trend
 -   the status of its habitat typical species (e.g. Red List status);
 -   landscape ecological coherence of the habitat;
 -   the existence of high pressures that cannot sufficiently be remediated by conservation measures.
@@ -53,7 +53,7 @@ Based on the information needs we can summarize the main targets of MHQ as follo
   + What is the trend of the proportion of the habitat area in good/bad condition?
   + Is the habitat quality stable, improving or deteriorating?
 
-Figure \@ref(fig:figstatustrend) shows the different conclusions that can be drawn based on the estimates (and the confidence interval) for habitat quality status and trend. Note that the habitat quality status is unknown when the confidence interval includes the 25% threshold. Also note that we need to define an upper and a lower threshold for the habitat quality trend to differentiate between a stable and an unknown trend. The confidence interval includes 0% change when the trend is stable or unknown. However when the confidence interval is very wide we have no idea whether there is an increase or a decrease in habitat quality and the therefore the trend is unknown.    
+Figure \@ref(fig:figstatustrend) shows the different conclusions that can be drawn from the estimates (and the confidence interval) of the habitat quality status and trend. Note that the habitat quality status is unknown when the confidence interval includes the 25% threshold. Also note that we need to define an upper and a lower threshold for the habitat quality trend to differentiate between a stable and an unknown trend. When the confidence interval includes 0% change, the trend is stable in case of a small confidence interval or unknown in case of very wide confidence interval.      
   
   
 ```{r figstatustrend, fig.cap= "Possible coclusions for habitat quality status and habitat quality trend", fig.width= 8}
@@ -91,7 +91,7 @@ grid.arrange(plot_status, plot_trend, ncol = 2, widths = c(4.5, 6))
 
 
 ```
-We want to emphasize the difference between the conservation status of structure and functions and the habitat quality status. The habitat quality status is the estimated proportion of habitat area in good/bad condition for a certain period in time. As explained in section \@ref(regional), the conservation status of structure and functions is an evaluation based on habitat quality status, habitat quality trend, habitat typical species, ecological coherence and pressures. MHQ only provide information on habitat quality status and trend and not on habitat typical species, ecological coherence and pressures.   
+We want to emphasize the difference between the *conservation status of structure and functions* and the *habitat quality status*. The *habitat quality status* is the estimated proportion of habitat area in good/bad condition for a certain period in time. As explained in section \@ref(regional), the *conservation status of structure and functions* is an evaluation based on habitat quality status, habitat quality trend, habitat typical species, ecological coherence and pressures. MHQ only provide information on habitat quality status and trend and not on habitat typical species, ecological coherence and pressures.   
 
 The original design of MHQ [@westra2014] was mainly based on the target for the habitat quality status. In this report we will evaluate how the design can be modified to better meet the monitoring target for the trend in habitat quality. We will evaluate different scenarios based on sample size calculations for status and trend in habitat quality. But first we summarize how habitat quality is defined and what needs to be measured in the field.
 

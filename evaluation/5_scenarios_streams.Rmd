@@ -6,7 +6,7 @@ Only one stream habitat type is included in MHQ: habitat type 3260 (Water course
 
 ## Original design
 
-The sampling frame of the original design is based on version 1.4 of the 3260 habitat map [@leyssen2014]. A sampling unit corresponds with a river segment of 100 meter. 
+The sampling frame of the original design is based on version 1.4 of the 3260 habitat map [@leyssen2012]. A sampling unit corresponds with a river segment of 100 meter. 
 
 In the original design the following strata were used:
 
@@ -45,9 +45,9 @@ n_sac_update <- 80
 
 ```
 
-An initial sample size of 80 in Flanders ($n_{fl}$) was chosen. Next, extra sampling units were selected within the stratum 'intersects with SAC and downstream of SAC' until a sample size of 170 ($n_{SAC}$) was reached. This is because most policy measures to improve the habitat quality are taken within SAC. Therefore, we expect that differences in habitat quality will most likely occur in river segments that intersect with SAC or are situated downstream of SAC (and we want to be able to detect those differences).
+An initial sample size of 80 in Flanders ($n_{fl}$) was chosen. Next, extra sampling units were selected within the stratum `intersects with SAC and downstream of SAC` until a sample size of 170 ($n_{SAC}$) was reached. This is because most policy measures to improve the habitat quality are taken within SAC. Therefore, we expect that differences in habitat quality will most likely occur in river segments that intersect with SAC or are situated downstream of SAC (and we want to be able to detect those differences).
 
-In a next step, the sample size is distributed over catchment area classes '< 10 km²' and '> 10 km²' proportional to the length of habitat type 3260 in each class. The reason to include these strata in the original design, is that @westra2014 expected to be able to make use of the data collected by the Flemish Environmental Agency (VMM). The VMM makes use of the same field protocol as INBO, but only measures sampling units in catchment areas larger than 10 km². By dividing the sample size over the strata '< 10 km²' and '> 10 km²' and subtracting the number of sampling units measured by VMM in the stratum '> 10 km²', we get the remaining number of sampling units per stratum that have to be measured by INBO to get a representative sample. However, VMM could not make a long term commitment for measuring sufficient sampling units in 3260 habitat. Therefore INBO decided to measure all sampling units in the monitoring scheme. As a consequence the stratum 'catchment area' is no longer useful and will be removed from the design to reduce its complexity (see further).      
+In a next step, the sample size is distributed over catchment area classes `< 10 km²` and `> 10 km²` proportional to the length of habitat type 3260 in each class. The reason to include these strata in the original design, is that @westra2014 expected to be able to make use of the data collected by the Flemish Environmental Agency (VMM). The VMM makes use of the same field protocol as INBO, but only measures sampling units in catchment areas larger than 10 km². By dividing the sample size over the strata `< 10 km²` and `> 10 km²` and subtracting the number of sampling units measured by VMM in the stratum `> 10 km²`, we get the remaining number of sampling units per stratum that have to be measured by INBO to get a representative sample. However, VMM could not make a long term commitment for measuring sufficient sampling units in 3260 habitat. Therefore INBO decided to measure all sampling units in the monitoring scheme. As a consequence the stratum `catchment area` is no longer useful and will be removed from the design to reduce its complexity (see further).      
 
 
 ```{r}
@@ -123,7 +123,7 @@ Note: in @westra2014 an error was made when distributing the sample size over th
 
 ## Update of the sample design for 3260
 
-In the updated design we use version 1.7 of the habitat map of 3260 [@inbo2020_3] as the sampling frame. It can be imported in R by using the function `read_habitatstreams()` of the n2khab package [@vanderhaeghe2022]. Another change in the sample design is that we will no longer make use of the stratum 'catchment area' as explained above. Finally, we will use the same design parameters as the terrestrial habitat types in order to get better information on trends in habitat quality:
+In the updated design we use version 1.7 of the habitat map of 3260 [@leyssen2020] as the sampling frame. It can be imported in R by using the function `read_habitatstreams()` of the n2khab package [@vanderhaeghe2022]. Another change in the sample design is that we will no longer make use of the stratum `catchment area` as explained above. Finally, we will use the same design parameters as the terrestrial habitat types in order to get better information on trends in habitat quality:
 
 + monitoring cycle = 6 years
 + $n_{fl} = 80$
@@ -251,7 +251,7 @@ sample_size_strata %>%
 
 ## Sampling process
 
-As for the terrestrial and standing water habitat types, the sampling process relies on the grts-master sample for Flanders [@onkelinx2019]. The starting point of a 100 meter stream segment (the most downstream point) is used as the reference point to assign a grts-ranking to the stream segment (the population unit). The 100 meter segments were created  by selecting points on the line segments of the 1.4 version of the 3260 map every 100 meter using the function `spsample` of the sp package [@Bivand2013]. Each created point corresponds with the most downstream point of the 100 meter segment. This method was also applied to create additional population units based on the updated map of 3260 [@inbo2020_3] to update the sampling frame. However, it appeared that updating the sampling frame using this way could result in overlapping population units and manual correction was needed. To avoid this in the future, we will make use of the actual 100 meter line segments instead of points (representing the start of the segment). We will make use of the data source `watercourse_100mseg` [@vanderhaeghe2021]. This data source  represents all officially known watercourses of the Flemish Region as line segments of 100 m (or < 100 m, for the most upstream segment of a watercourse).
+As for the terrestrial and standing water habitat types, the sampling process relies on the grts-master sample for Flanders [@onkelinx2019]. The starting point of a 100 meter stream segment (the most downstream point) is used as the reference point to assign a grts-ranking to the stream segment (the population unit). The 100 meter segments were created  by selecting points on the line segments of the 1.4 version of the 3260 map every 100 meter using the function `spsample` of the sp package [@Bivand2013]. Each created point corresponds with the most downstream point of the 100 meter segment. This method was also applied to create additional population units based on the updated map of 3260 [@leyssen2020] to update the sampling frame. However, it appeared that updating the sampling frame using this way could result in overlapping population units and manual correction was needed. To avoid this in the future, we will make use of the actual 100 meter line segments instead of points (representing the start of the segment). We will make use of the data source `watercourse_100mseg` [@vanderhaeghe2021]. This data source  represents all officially known watercourses of the Flemish Region (status 2020-08-07) as line segments of 100 m (or < 100 m, for the most upstream segment of a watercourse).
 
 
 
