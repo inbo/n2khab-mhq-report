@@ -356,6 +356,8 @@ summary_power <- summary_status %>%
   cbind(summary_trend) %>%
   cbind(summary_trend2)
 
+write_csv2(summary_power, "../output/summary_power.csv")
+
 summary_power %>%
   select("sample size", "habitat prop. in bad condition (mdd from 25%-threshold)" = status, "habitat prop. in bad condition (mdd between 2 periods)" = proportion_bad, "prop. favourable indicators (mdd between 2 periods)" = mean_diff_range) %>%
   kable( booktabs = TRUE, 

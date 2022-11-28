@@ -90,44 +90,12 @@ output:
   bookdown::dontrun: default
 ---
 
-
-# Acknowledgement {-}
-
-We thank Hans Van Calster for reviewing this report. We also thank all the field surveyors that have contributed to the data collection for the habitat quality monitoring scheme: Vincent Smeekens, Kevin Scheers, Jo Packet, Jonathan Verborgt, Nils Bouillard, Ivy Jansen, Wim Jambon, Jan Meulemans, Raf Schrey, Luc Schrey, Peter Sannen,
-Alex Vandebon, Geert Fierens, Anke Balleux, Patrick Deckers, Bart Roelandt, Wouter Van Gompel, Ward Vercruysse, Sam Provoost, Indra Jacobs, Remar Erens, Robin Guelinckx, Frederic Van Lierop and Bart Vandevoorde.
-
-# Abstract {-}
-
-Abstract
-
-\bdutch
-
-# Samenvatting {-}
-
-Samenvatting
-
-\edutch
-
-# Introduction
-
-Every six years member states of the European Union report on the conservation status of species and habitat types listed in the Annexes to the Habitats and Birds Directive. The Research Institute Nature and Forest (INBO) is responsible for the monitoring of these species and habitat types in Flanders, the northern part of Belgium. 
-
-INBO implemented a monitoring programme for habitat types that consists of the following parts:
-
-+ a field based habitat mapping campaign to assess the distribution, area and range of all habitat types and subtypes in Flanders
-
-+ a monitoring scheme to assess the biotic habitat quality for most habitat types and subtypes
-
-An additional part for monitoring the natural environment is currently under development. It aims to assess selected abiotic conditions of habitat types to evaluate the principal pressures and threats. 
-
-In this report, we focus on the Monitoring scheme for biotic Habitat Quality (MHQ) and evaluate the design of this scheme as described by @westra2014. First, we briefly summarize the [information needs](#information) and provide an overview of some of the [characteristics of MHQ](#overview). Next we [evaluate the sample size](#samplesize). The original sample size of the monitoring scheme was based on sample size calculations for the status of the habitat quality [@westra2014]. In this report we also explore the sample size for the habitat quality trend, as trend information is key in the habitat reporting. Finally, we evaluate some alternative scenarios for the monitoring design and document the modifications of the monitoring design that will be implemented. We do this separately for [terrestrial habitat types](#scenarioterr), [standing water habitat types](#scenariostandwater) and [stream habitat types](#scenariostream).  
-
 ```{r setup, include = FALSE}
 library(knitr)
 opts_chunk$set(
   echo = FALSE,
   eval = TRUE,
-  cache = FALSE,
+  cache = TRUE,
   warning = FALSE,
   error = FALSE,
   message = FALSE
@@ -175,3 +143,154 @@ format_table <- ifelse(doc.type == "docx", "simple", doc.type)
 
 
 ```
+
+# Acknowledgement {-}
+
+We thank Hans Van Calster for reviewing this report. We also thank all the field surveyors that have contributed to the data collection for the habitat quality monitoring scheme: Vincent Smeekens, Kevin Scheers, Jo Packet, Jonathan Verborgt, Nils Bouillard, Ivy Jansen, Wim Jambon, Jan Meulemans, Raf Schrey, Luc Schrey, Peter Sannen,
+Alex Vandebon, Geert Fierens, Anke Balleux, Patrick Deckers, Bart Roelandt, Wouter Van Gompel, Ward Vercruysse, Sam Provoost, Indra Jacobs, Remar Erens, Robin Guelinckx, Frederic Van Lierop and Bart Vandevoorde.
+
+# Abstract {-}
+
++ The Monitoring scheme for biotic Habitat Quality (MHQ) aims at assessing the proportion of the habitat area in bad condition, for the habitat types and subtypes in Flanders. The habitat quality is favourable when this proportion is lower than 25%. This information is needed to evaluate the structure and functions criterion and the overall conservation status of habitat types, and is therefore crucial for the 6-yearly reporting in the framework of the Habitat Directive.
+
++ MHQ was implemented in 2014. In this report we review the design of MHQ with a focus on the trend information that is provided by the monitoring scheme.
+
++ We propose following changes in the monitoring design of the open terrestrial habitat types and the stream habitat type (3260):
+  + Decrease the monitoring cycle from 12 years to 6 years making it possible to assess the habitat quality trend after 12 years of monitoring (= 2 monitoring cycles of 6 years) instead of 24 years (= 2 monitoring cycles of 12 years);
+  + Decrease the oversampling within Special Areas of Conservation (SAC) from 170 to 80 sampling units per habitat type, as a sample size of 80 is sufficient to differentiate between favourable and unfavourable habitat quality for most habitat types; 
+  + Decrease the oversampling for habitat subtypes from 80 to 40 sampling units per subtype, as information on the conservation status for habitat subtypes is of lower priority and is not required for the European reporting (Habitat Directive).
+
++ In the original design for standing water habitat types, all water surfaces larger than 5 ha were selected and a sample was drawn from the water surfaces smaller than 5 ha. We propose to take a sample from the water surfaces with and area between 5 and 50 ha, as it is not feasible (and necessary) to measure all the water surfaces within this area class. We also propose to drop the oversampling within SAC as most water surfaces are situated within SAC and oversampling is not necessary.      
+
++ We do not modify the monitoring design for the forest habitat types, keeping a monitoring cycle of 12 years, as there is an important synergy with the Flemish Forest Inventory that has the same monitoring cycle of 12 years.
+
++ The changes in the monitoring design are summarized in Table \@ref(tab:tababstract).
+
+```{r tababstract, cache = FALSE}
+table_abstract <- tibble(hab_cat = c("terrestrial open habitat", "terrestrial open habitat", "stream habitat", "stream habitat", "standing water habitat", "standing water habitat"),
+                         version = c("original", "new", "original", "new", "original", "new"),
+                         cycle = c(12, 6, 12, 6, 6, 6),
+                         n_fl = c("80", "80", "80" ,"80", 
+                                  str_c("40 and all > 5 ha", footnote_marker_symbol(1)), 
+                                  str_c("80 and all > 50 ha", footnote_marker_symbol(2))),
+                         n_sac = c(170, 80, 170, 80, 80, 0),
+                         n_subtype = c(80, 40, NA, NA, 40, 40),
+                         n_year = c("247", "258", "15", "17", "43.5", "42"),
+                         sampling_unit = c("36 m diameter plot", "36 m diameter plot", "100 m river segment", "100 m river segment", "entire water surface", "entire water surface"))
+
+table_abstract %>%
+  select("habitat category" = hab_cat, design = version, "cycle (years)" = cycle, "n \nFlanders" = n_fl, "n SAC" = n_sac, "n \nsubtype" = n_subtype, "n total / year" = n_year, "sampling unit" = sampling_unit) %>%
+  kable(booktabs = TRUE,
+        format = format_table,
+        caption = "Changes in the design of MHQ: duraction of the monitoring cycle, sample size per habitat type (n Flanders), sample size per habitat type within SAC (n SAC), sample size per subtype (n subtype), total sample size over all types and subtypes per year (n total / year)",
+        escape = FALSE,
+        align= "llcccccl") %>%
+  kable_styling() %>%
+  column_spec(c(2, 3, 5, 6, 7), width = "1cm") %>%
+  column_spec(c(1, 8), width = "2cm") %>%
+  collapse_rows(c(1, 8)) %>%
+  footnote(symbol = c("A sample is taken for all watersurfaces < 5 ha and all watersurfaces > 5 ha are selected",
+                      "A sample is taken for all watersurfaces < 50 ha and all watersurfaces > 50 ha are selected"))
+```
+
+\needspace{100mm}
+
++ Table \@ref(tab:tababstract2) summarizes the minimal detectable difference (mmd) for habitat quality status and trend. 
+
+```{r tababstract2}
+summary_power <- read_csv2("../output/summary_power.csv")
+
+summary_power %>%
+  select("sample size", "habitat prop. in bad condition (mdd from 25%-threshold)" = status, "habitat prop. in bad condition (mdd between 2 periods)" = proportion_bad, "prop. favourable indicators (mdd between 2 periods)" = mean_diff_range) %>%
+  kable( booktabs = TRUE, 
+        format = format_table,
+        align = "cccc",
+        caption = "Summary of minimal detectable differences (mdd) for habitat quality status and trend. The habitat proportion (prop.) in bad condition assumes that the habitat condition is eather good or bad (binary variable). The proportion of favourable indicators is the percentage of the quality indicators that are favourable at a certain location.") %>%
+  kable_styling() %>%
+  add_header_above(c(" " = 1, "habitat quality status" = 1, "habitat quality trend" = 2 )) %>%
+  column_spec(c(2,3,4), width = "4cm")
+```
+
+
+
+\bdutch
+
+# Samenvatting {-}
+
++ Het meetnet voor biotische habitatkwaliteit (Monitoring scheme for biotic Habitat Quality of MHQ) heeft als doel om per habitattype en -subtype te bepalen welk aandeel van het habitat zich in een slechte staat bevindt. De habitatkwaliteit is gunstig wanneer dit aandeel kleiner is dan 25%. Deze informatie is nodig om het criterium 'structuur en functies' te beoordelen en de globale staat van instandhouding te bepalen per habitattype, en is daarom van groot belang voor de 6-jaarlijkse rapportage in kader van de Habitatrichtlijn.    
+
++ MHQ is in 2014 van start gegaan. In dit rapport reviseren we het meetnetontwerp, met speciale aandacht voor de trendinformatie die het meetnet levert.
+
++ We stellen volgende wijzigingen voor aan het meetnetontwerp voor de open terrestrische habitattypen en het aquatisch habitattype 3260:
+  + vermindering van de meetcyclus van 12 jaar naar 6 jaar, zodat het mogelijk wordt om na 12 jaar (2 meetcycli van 6 jaar) de trend in habitatkwaliteit te bepalen i.p.v. na 24 jaar (2 meetcycli van 12 jaar);
+  + vermindering van de overbemonstering binnen de Speciale Beschermingszones (SBZ) van 170 naar 80 steekproefeenheden per habitattype omdat een steekproefgroote van 80 voor de meeste habitattypen volstaat om een onderscheid te maken tussen een gunstige en ongunstige kwaliteit.
+  + vermingering van de overbemonstering binnen de habitatsubtypen van 80 naar 40 steekproefeenheden per subtype gezien de informatie over de staat van instandhouding van habitatsubtypen een lagere prioriteit heeft en niet noodzakelijk is voor de EU rapportage.
+
++ In het originele meetnetontwerp voor habitattypen in stilstaande wateren werden alle plassen groter dan 5 ha geselecteerd en werd er een steekproef getrokken uit de set van plassen kleiner dan 5 ha. We stellen voor om ook een steekproef te nemen uit de set van plassen met een oppervlakte tussen 5 ha en 50 ha om de haalbaarheid en kostenefficiëntie te verhogen. We stellen ook voor om de overbemonstering in SBZ te laten vallen omdat de meeste plassen in SBZ gelegen zijn en de steekproef dus reeds voldoende plassen binnen SBZ bevat.
+
++ Het meetnetontwerp voor de boshabitattypen zal niet gewijzigd worden. We behouden een meetcyclus van 12 jaar om een optimale synergie met de Vlaamse bosinventarisatie te behouden.      
+
++ De veranderingen aan het meetnetontwerp vatten we samen in Tabel \@ref(tab:tababstractd).
+
+```{r tababstractd, cache = FALSE}
+table_abstract <- tibble(hab_cat = c("terrestrisch open", "terrestrisch open", "rivier", "rivier", "stistaande wateren", "stistaande wateren"),
+                         version = c("originel", "nieuw", "origineel", "nieuw", "origineel", "nieuw"),
+                         cycle = c(12, 6, 12, 6, 6, 6),
+                         n_fl = c("80", "80", "80" ,"80", 
+                                  str_c("40 en alle > 5 ha", footnote_marker_symbol(1)), 
+                                  str_c("80 en alle > 50 ha", footnote_marker_symbol(2))),
+                         n_sac = c(170, 80, 170, 80, 80, 0),
+                         n_subtype = c(80, 40, NA, NA, 40, 40),
+                         n_year = c("247", "258", "15", "17", "43.5", "42"),
+                         sampling_unit = c("36 m diameter plot", "36 m diameter plot", "100 m rivier segment", "100 m rivier segment", "volledige plas", "volledige plas"))
+
+table_abstract %>%
+  select("habitat categorie" = hab_cat, design = version, "meetcyclus (jaren)" = cycle, "n \nVl" = n_fl, "n SBZ" = n_sac, "n \nsubtype" = n_subtype, "n tot / jaar" = n_year, "steekproef- eenheid" = sampling_unit) %>%
+  kable(booktabs = TRUE,
+        format = format_table,
+        caption = "Veranderingen in het meetnetontwerp van MHQ: duur meetcyclus, steekproefgrootte per habitattype in Vlaanderen (n Vl), steekproefgrootte per habitattype in SBZ (n SBZ), steekproefgroote per habitatsubtype (n subtype) en totaal aantal te bemonsteren steekproefeenheden per jaar voor alle habitattypen en -subtypen (n totaal / jaar)",
+        escape = FALSE,
+        align= "llcccccl") %>%
+  kable_styling() %>%
+  column_spec(c(2, 3, 5, 6, 7), width = "1cm") %>%
+  column_spec(c(1, 8), width = "2cm") %>%
+  collapse_rows(c(1, 8)) %>%
+  footnote(symbol = c("Steekproeftrekking voor plassen < 5 ha en selectie van alle plassen > 5 ha",
+                      "Steekproeftrekking voor plassen < 50 ha en selectie van alle plassen > 50 ha"))
+```
+
+\needspace{100mm}
+
++ Tabel \@ref(tab:tababstractd2) geeft een overzicht van het minimaal detecteerbaar verschil (mdv) voor de toestand en de trend van de  habitatkwaliteit bij verschillende steekproefgroottes. 
+
+```{r tababstractd2}
+summary_power <- read_csv2("../output/summary_power.csv")
+
+summary_power %>%
+  select(steekproefgrootte = "sample size", "Habitataandeel in slechte staat (mdv t.o.v. 25%-threshold)" = status, "Habitataandeel in slechte staat (mdv tussen 2 periodes)" = proportion_bad, "Proportie gunstige indicatoren (mdv tussen 2 periodes)" = mean_diff_range) %>%
+  kable( booktabs = TRUE, 
+        format = format_table,
+        align = "cccc",
+        caption = "Overzicht van minimaal detecteerbaar verschil (mdv) voor de toestand en trend van de habitatkwaliteit. Bij het habitataandeel in slechte staat gaan we er vanuit dat habitat op een bepaalde locatie zich in een goede of slechte staat bevindt (binaire variabele). De proportie gunstige indicatoren geeft aan welk percentage van de kwaliteitsindicatoren gunstig scoren op een bepaalde locatie.") %>%
+  kable_styling() %>%
+  add_header_above(c(" " = 1, "Toestand habitatkwaliteit" = 1, "Trend habitatkwaliteit" = 2 )) %>%
+  column_spec(c(2,3,4), width = "4cm")
+```
+
+\edutch
+
+# Introduction
+
+Every six years member states of the European Union report on the conservation status of species and habitat types listed in the Annexes to the Habitats and Birds Directive. The Research Institute Nature and Forest (INBO) is responsible for the monitoring of these species and habitat types in Flanders, the northern part of Belgium. 
+
+INBO implemented a monitoring programme for habitat types that consists of the following parts:
+
++ a field based habitat mapping campaign to assess the distribution, area and range of all habitat types and subtypes in Flanders
+
++ a monitoring scheme to assess the biotic habitat quality for most habitat types and subtypes
+
+An additional part for monitoring the natural environment is currently under development. It aims to assess selected abiotic conditions of habitat types to evaluate the principal pressures and threats. 
+
+In this report, we focus on the Monitoring scheme for biotic Habitat Quality (MHQ) and evaluate the design of this scheme as described by @westra2014. First, we briefly summarize the [information needs](#information) and provide an overview of some of the [characteristics of MHQ](#overview). Next we [evaluate the sample size](#samplesize). The original sample size of the monitoring scheme was based on sample size calculations for the status of the habitat quality [@westra2014]. In this report we also explore the sample size for the habitat quality trend, as trend information is key in the habitat reporting. Finally, we evaluate some alternative scenarios for the monitoring design and document the modifications of the monitoring design that will be implemented. We do this separately for [terrestrial habitat types](#scenarioterr), [standing water habitat types](#scenariostandwater) and [stream habitat types](#scenariostream).  
+
+

@@ -122,7 +122,7 @@ The spatial scale at which these variables are measured, depends on the habitat 
 tabscale <- tibble(category = c("terrestrial", "terrestrial", "aquatic", "aquatic"),
                    "habitat type" = c("forest", "open", "stream", "standing water"),
                    "vegetation composition" = c("16 m x 16 m square plot", "3 m x 3 m square plot", "100 m river segment", "entire water body"),
-                   "structure variables" = c("18 m diameter circle plot", "18 m diameter circle plot", "100 m river segment", "entire water body"))
+                   "structure variables" = c("36 m diameter circle plot", "36 m diameter circle plot", "100 m river segment", "entire water body"))
 tabscale %>%
   kable(caption= "Spatial scale at which the vegetation composition and structure variables are measured",
         booktabs = TRUE, 

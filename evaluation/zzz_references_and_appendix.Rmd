@@ -29,7 +29,7 @@ table_types %>%
         longtable = TRUE,
         caption = "Habitat types and subtypes in Flanders", 
         format = format_table) %>%
-  kable_styling(latex_options = c("scale_down")) %>%
+  kable_styling(latex_options = c("scale_down"), font_size = 8) %>%
     column_spec(1, width = "0.5cm") %>%
     column_spec(c(2,3), width = "7cm") %>%
     collapse_rows(c(1, 2), row_group_label_position = 'stack')

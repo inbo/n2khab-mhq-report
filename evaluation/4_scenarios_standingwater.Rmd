@@ -272,10 +272,12 @@ samplesize_overview %>%
   
 ```
 
+\needspace{120mm}
+
 The total sample size that results from the current sampling frame is much higher than in the original design. Therefore we will explore two alternative scenarios that are better adapted to the current sampling frame.
 
 
-\needspace{80mm}
+
 
 
 ## Alternative scenarios
