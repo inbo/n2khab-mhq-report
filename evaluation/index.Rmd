@@ -52,7 +52,7 @@ reviewer:
     orcid: 0000-0001-8595-8426
 year: 2022
 cover_photo:
-cover_description: foto
+cover_description: "Data collection for the habitat quality monitoring scheme (Photo: Patrik Oosterlynck)"
 cover:
 doi: 10.21436/inbor.85829488
 reportnr: 25
@@ -222,11 +222,11 @@ summary_power %>%
 + MHQ is in 2014 van start gegaan. In dit rapport reviseren we het meetnetontwerp, met speciale aandacht voor de trendinformatie die het meetnet levert.
 
 + We stellen volgende wijzigingen voor aan het meetnetontwerp voor de open terrestrische habitattypen en het aquatisch habitattype 3260:
-  + vermindering van de meetcyclus van 12 jaar naar 6 jaar, zodat het mogelijk wordt om na 12 jaar (2 meetcycli van 6 jaar) de trend in habitatkwaliteit te bepalen i.p.v. na 24 jaar (2 meetcycli van 12 jaar);
-  + vermindering van de overbemonstering binnen de Speciale Beschermingszones (SBZ) van 170 naar 80 steekproefeenheden per habitattype omdat een steekproefgroote van 80 voor de meeste habitattypen volstaat om een onderscheid te maken tussen een gunstige en ongunstige kwaliteit.
-  + vermingering van de overbemonstering binnen de habitatsubtypen van 80 naar 40 steekproefeenheden per subtype gezien de informatie over de staat van instandhouding van habitatsubtypen een lagere prioriteit heeft en niet noodzakelijk is voor de EU rapportage.
+  + vermindering van de meetcyclus van 12 jaar naar 6 jaar, zodat het mogelijk wordt om na 12 jaar (2 meetcycli van 6 jaar) de trend in habitatkwaliteit te bepalen i.p.v. na 24 jaar (2 meetcycli van 12 jaar)
+  + vermindering van de overbemonstering binnen de Speciale Beschermingszones (SBZ) van 170 naar 80 steekproefeenheden per habitattype omdat een steekproefgrootte van 80 voor de meeste habitattypen volstaat om een onderscheid te maken tussen een gunstige en ongunstige kwaliteit
+  + vermindering van de overbemonstering binnen de habitatsubtypen van 80 naar 40 steekproefeenheden per subtype gezien de informatie over de staat van instandhouding van habitatsubtypen een lagere prioriteit heeft en niet noodzakelijk is voor de EU rapportage
 
-+ In het originele meetnetontwerp voor habitattypen in stilstaande wateren werden alle plassen groter dan 5 ha geselecteerd en werd er een steekproef getrokken uit de set van plassen kleiner dan 5 ha. We stellen voor om ook een steekproef te nemen uit de set van plassen met een oppervlakte tussen 5 ha en 50 ha om de haalbaarheid en kostenefficiëntie te verhogen. We stellen ook voor om de overbemonstering in SBZ te laten vallen omdat de meeste plassen in SBZ gelegen zijn en de steekproef dus reeds voldoende plassen binnen SBZ bevat.
++ In het originele meetnetontwerp voor habitattypen in stilstaande wateren werden alle plassen groter dan 5 ha geselecteerd en werd er een steekproef getrokken uit de set van plassen kleiner dan 5 ha. We stellen voor om ook een steekproef te nemen uit de set van plassen met een oppervlakte tussen 5 ha en 50 ha om de haalbaarheid en kostenefficiëntie te verhogen. We stellen ook voor om de overbemonstering in SBZ te laten vallen omdat de meeste plassen in SBZ gelegen zijn, en de steekproef dus al voldoende plassen binnen SBZ bevat.
 
 + Het meetnetontwerp voor de boshabitattypen zal niet gewijzigd worden. We behouden een meetcyclus van 12 jaar om een optimale synergie met de Vlaamse bosinventarisatie te behouden.      
 
