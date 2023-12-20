@@ -122,7 +122,7 @@ watersurfaces_hab <- watersurfaces_hab$watersurfaces_polygons %>%
   semi_join(watersurfaces_populationunits, by = "polygon_id") %>%
   select(polygon_id)
 
-watersurfaces_extra <- read_watersurfaces() %>%
+watersurfaces_extra <- read_watersurfaces(version = "watersurfaces_v1.1") %>%
   filter(polygon_id %in% watersurfaces_populationunits$polygon_id) %>%
   filter(! polygon_id %in% watersurfaces_hab$polygon_id) %>%
   select(polygon_id)
@@ -147,7 +147,8 @@ watersurfaces_types_2021 <- watersurfaces_populationunits %>%
   mutate(version = "watersurfaces_hab_2021")
 
 watersurfaces_types <- watersurfaces_types_2021 %>%
-  bind_rows(watersurfaces_hab_types_2014)
+  bind_rows(watersurfaces_hab_types_2014) 
+  
 
 ```
 
@@ -546,6 +547,47 @@ samplesize_orig_total %>%
 
 As for the terrestrial habitat types, the sampling process relies on the grts-master sample for Flanders [@onkelinx2019]. To assign a grts-ranking to a water body (the population unit) we select a reference point in the water body using the function `st_point_on_surface` of the sf package [@Pebesma2018]. Next, the water body gets the grts-ranking of the grts-master grid cell in which the reference point is located. Once a grts-ranking is assigned to all water bodies, a sample can be drawn in a similar way as the terrestrial habitat types. 
 
+```{r}
+
+n_panel <- 3
+
+set.seed(23245)
+
+sample_final <- sample_watersurfaces_types_2021 %>%
+  filter(grts_ranking != 34352082) %>% # NA TE KIJKEN
+   filter(scenario == "alternative 2") %>%
+  filter(sampling_unit) %>%
+  group_by(type, sac, area_class) %>%
+  mutate(random_part = runif(1,0,1)) %>%
+  ungroup() %>%
+  mutate(panel = ceiling((ranking - 1 + random_part)/samplesize * n_panel)) %>%
+  group_by(polygon_id) %>%
+  mutate(panel_min = min(panel),
+         n_types = n(),
+         source_all = str_c(str_c(type, ": ", source), collapse = "; "),
+         type_all = str_c(type, collapse = "; ")) %>%
+  ungroup() 
+
+sample_final_wide <- sample_final %>%
+  distinct(polygon_id, grts_ranking, grts_ranking_draw, area_class, sac, type_all, panel = panel_min, source_all)
+
+check <- sample_final_wide %>%
+  group_by(polygon_id) %>%
+  filter(n() > 1)
+
+n_plassen_panel <- sample_final_wide %>%
+  group_by(panel, area_class) %>%
+  summarise(n = n(),
+            n_distinct = n_distinct(polygon_id)) %>%
+  ungroup()
+
+sample_final_wide_sf <- watersurfaces_area_sf %>%
+  select(polygon_id) %>%
+  inner_join(sample_final_wide, by = "polygon_id")
+
+sample_final_wide_sf %>%
+  st_write("../output/mhq_standingwater_cycle2.gpkg")
+```
 
 
 
