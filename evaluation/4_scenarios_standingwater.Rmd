@@ -548,14 +548,13 @@ samplesize_orig_total %>%
 As for the terrestrial habitat types, the sampling process relies on the grts-master sample for Flanders [@onkelinx2019]. To assign a grts-ranking to a water body (the population unit) we select a reference point in the water body using the function `st_point_on_surface` of the sf package [@Pebesma2018]. Next, the water body gets the grts-ranking of the grts-master grid cell in which the reference point is located. Once a grts-ranking is assigned to all water bodies, a sample can be drawn in a similar way as the terrestrial habitat types. 
 
 ```{r}
-
 n_panel <- 3
 
 set.seed(23245)
 
 sample_final <- sample_watersurfaces_types_2021 %>%
   filter(grts_ranking != 34352082) %>% # NA TE KIJKEN
-   filter(scenario == "alternative 2") %>%
+  filter(scenario == "alternative 2") %>%
   filter(sampling_unit) %>%
   group_by(type, sac, area_class) %>%
   mutate(random_part = runif(1,0,1)) %>%
@@ -587,6 +586,7 @@ sample_final_wide_sf <- watersurfaces_area_sf %>%
 
 sample_final_wide_sf %>%
   st_write("../output/mhq_standingwater_cycle2.gpkg")
+
 ```
 
 
